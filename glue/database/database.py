@@ -11,7 +11,7 @@ class Canister(TypedDict):
 
 
 class GlueGuild(TypedDict):
-    guildId: int
+    guildId: str
     canisters: list[Canister]
 
 

@@ -32,7 +32,7 @@ class Project(app_commands.Group):
         try:
             if interaction.guild_id:
                 document: GlueGuild = {
-                    "guildId": interaction.guild_id,
+                    "guildId": str(interaction.guild_id),
                     "canisters": [
                         {
                             "canisterId": canister_id,

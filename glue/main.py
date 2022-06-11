@@ -41,9 +41,10 @@ db = Database()
 async def generate(interaction: discord.Interaction):
     """Generates the URL for members to verify with."""
     try:
-        await interaction.response.send_message((f'❗️The following URL is only valid for the discord server this command was run from!❗️\n',
-                                                f'As a best practice you should create a new channel that contains nothing but this link. Make sure no one but you our people you can trust have the ability to manage that channel!\n\n',
-                                                 f'{FRONTEND_URL}/?{interaction.guild_id}'), ephemeral=True)
+        await interaction.response.send_message(f'❗️The following URL is only valid for the discord server this command was run from!❗️\n'
+                                                f'As a best practice you should create a new channel that contains nothing but this link. Make sure no one but you or people you can trust have the ability to manage that channel!\n\n'
+                                                f'{FRONTEND_URL}/?guild={interaction.guild_id}',
+                                                ephemeral=True)
     except Exception as e:
         await interaction.response.send_message(f'Error: {e}', ephemeral=True)
 
