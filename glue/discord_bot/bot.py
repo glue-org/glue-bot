@@ -30,22 +30,14 @@ class Bot(commands.Bot):
         # self.add_cog()
 
     # loop
-    @tasks.loop(seconds=1)
+    @tasks.loop(seconds=60)
     async def check_ownership(self):
-        print("moin")
+        # this is where our routine should be running that checks if users still own the NFT
+        print("hi")
 
     # called when bot is ready
     async def on_ready(self):
         print(f"We have logged in as {self.user}.")
-
-    # on_message event is called when a message is sent
-    async def on_message(self, message):
-        # ignore our own messages
-        if message.author == self.user:
-            return
-
-        if message.content.startswith('$hello'):
-            await message.channel.send('Hello!')
 
     # called when bot is added to guild
     async def on_guild_join(self, guild: Guild):
@@ -55,6 +47,15 @@ class Bot(commands.Bot):
         if owner:
             await owner.send(
                 f"Hey there, thanks for having me 🥳\n"
-                f"If you want to setup an NFT project to grant holder roles to members, run the `/setup` command in a channel of the respective server.\n"
-                f"If you feel lost, you can always run `/help` to get and overview of what I can do 😊\n"
+                f"If you want to setup an NFT project to grant holder roles to members, run the `/project add` command in any channel of the respective server.\n"
+                f"After you setup your first project, you can run `/generate` to generate your unique verification URL 😊\n"
             )
+
+    # on_message event is called when a message is sent
+    # async def on_message(self, message):
+    #     # ignore our own messages
+    #     if message.author == self.user:
+    #         return
+
+    #     if message.content.startswith('$hello'):
+    #         await message.channel.send('Hello!')

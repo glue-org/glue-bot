@@ -1,4 +1,4 @@
-from discord import app_commands
+from discord import Guild, app_commands
 import discord
 from glue.database.database import Database
 from glue.discord_bot.ui.button import Button
@@ -19,20 +19,25 @@ class Project(app_commands.Group):
         self.client = client
 
     @app_commands.command()
+    @app_commands.describe(
+        name='Please provide a name for your project. This will only be used internally',
+        canister_id='Please specify the projects canister ID, e.g. `pk6rk-6aaaa-aaaae-qaazq-cai`',
+        standard='Please pick the standard the canister is implementing.',
+        role='Please specify the name of the role that users will receive when they are holders.',
+    )
     @app_commands.guild_only()
     @app_commands.default_permissions()
-    async def add(self, interaction: discord.Interaction, name: str, canister_id: str, standard: Literal['ext', 'dip721'], min: int = 1, max: Optional[int] = None):
+    async def add(self, interaction: discord.Interaction, name: str, canister_id: str, standard: Literal['ext', 'dip721'], role: str):
         """Set up an NFT project"""
         try:
             if interaction.guild_id:
                 document: GlueGuild = {
-                    "server_id": interaction.guild_id,
+                    "guildId": interaction.guild_id,
                     "canisters": [
                         {
-                            "canister_id": canister_id,
-                            "standard": standard,
-                            "min": min,
-                            "max": max,
+                            "canisterId": canister_id,
+                            "tokenStandard": standard,
+                            "role": role,
                             "name": name,
                             "users": []
                         }
@@ -40,39 +45,50 @@ class Project(app_commands.Group):
 
                 }
                 db.insert(document)
-                await interaction.response.send_message(f'Added project {name} to database')
+                await interaction.response.send_message(f'Added project {name} to database', ephemeral=True)
         except Exception as e:
-            await interaction.response.send_message(f'Error: {e}')
+            await interaction.response.send_message(f'Error: {e}', ephemeral=True)
 
     @app_commands.command()
+    @app_commands.guild_only()
+    @app_commands.default_permissions()
     async def list(self, interaction: discord.Interaction):
         """List all projects"""
-        projects = db.find({})
-        if not projects:
-            await interaction.response.send_message('No projects found')
-        for project in projects:
-            await interaction.response.send_message(f'{project}')
+        guild: Optional[GlueGuild] = db.find_one(
+            {"guildId": interaction.guild_id})
+        if not guild or not guild['canisters']:
+            await interaction.response.send_message('No projects found', ephemeral=True)
+        else:
+            message_string = ''
+            for project in guild['canisters']:
+                message_string += f'📇 name: {project["name"]}\n🪪canister id: {project["canisterId"]}\n🕵🏿‍♂️ role: {project["role"]}\n💾 standard: {project["tokenStandard"]}\n\n'
+            await interaction.response.send_message(message_string, ephemeral=True)
 
     @app_commands.command()
-    async def modal(self, interaction: discord.Interaction):
-        """open modal"""
-        await interaction.response.send_modal(Questionnaire())
-
-    @app_commands.command()
-    async def button(self, interaction: discord.Interaction):
-        """open button"""
-        await interaction.response.send_message("moin", view=Button())
-
-    @app_commands.command()
-    async def select(self, interaction: discord.Interaction):
-        """open select"""
-        await interaction.response.send_message("moin", view=DropdownView())
-
-    @app_commands.command()
+    @app_commands.guild_only()
+    @app_commands.default_permissions()
+    @app_commands.describe(
+        canister_id='Please specify the canister ID of the project you want to delete, e.g. `pk6rk-6aaaa-aaaae-qaazq-cai`',
+    )
     async def remove(self, interaction: discord.Interaction, canister_id: str):
         """Remove a project"""
         try:
             result = db.delete_canister(interaction.guild_id, canister_id)
-            await interaction.response.send_message(f'Removed project {canister_id} from database. {result}')
+            await interaction.response.send_message(f'Removed project {canister_id} from database. {result}', ephemeral=True)
         except Exception as e:
-            await interaction.response.send_message(f'Error: {e}')
+            await interaction.response.send_message(f'Error: {e}', ephemeral=True)
+
+    # @app_commands.command()
+    # async def modal(self, interaction: discord.Interaction):
+    #     """open modal"""
+    #     await interaction.response.send_modal(Questionnaire())
+
+    # @app_commands.command()
+    # async def button(self, interaction: discord.Interaction):
+    #     """open button"""
+    #     await interaction.response.send_message("moin", view=Button())
+
+    # @app_commands.command()
+    # async def select(self, interaction: discord.Interaction):
+    #     """open select"""
+    #     await interaction.response.send_message("moin", view=DropdownView())

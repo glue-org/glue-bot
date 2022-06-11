@@ -21,6 +21,7 @@ logger.addHandler(handler)
 # add variable from .env file
 load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+FRONTEND_URL = os.getenv('FRONTEND_URL')
 
 
 intents = discord.Intents.default()
@@ -35,39 +36,16 @@ db = Database()
 
 
 @bot.tree.command()
-async def hello(interaction: discord.Interaction):
-    """Says hello!"""
-    await interaction.response.send_message(f'Hi, {interaction.user.mention}', ephemeral=True)
-
-
-@bot.tree.command()
-@app_commands.describe(
-    first_value='The first value you want to add something to',
-    second_value='The value you want to add to the first value',
-)
-async def add(interaction: discord.Interaction, first_value: int, second_value: int):
-    """Adds two numbers together."""
-    await interaction.response.send_message(f'{first_value} + {second_value} = {first_value + second_value}')
-
-
-@bot.tree.command()
-async def remove_guild(interaction: discord.Interaction):
-    """Remove a project"""
+@app_commands.guild_only()
+@app_commands.default_permissions()
+async def generate(interaction: discord.Interaction):
+    """Generates the URL for members to verify with."""
     try:
-        result = db.delete_server({"server_id": interaction.guild_id})
-        await interaction.response.send_message(f'Removed project from database. {result}')
+        await interaction.response.send_message((f'❗️The following URL is only valid for the discord server this command was run from!❗️\n',
+                                                f'As a best practice you should create a new channel that contains nothing but this link. Make sure no one but you our people you can trust have the ability to manage that channel!\n\n',
+                                                 f'{FRONTEND_URL}/?{interaction.guild_id}'), ephemeral=True)
     except Exception as e:
-        await interaction.response.send_message(f'Error: {e}')
-
-
-@bot.tree.command()
-# use this decorator to hide commmands from certain users
-# https://discordpy.readthedocs.io/en/latest/interactions/api.html?highlight=permissions#discord.app_commands.default_permissions
-@discord.app_commands.default_permissions()
-@app_commands.describe(fruits='fruits to choose from')
-async def fruit(interaction: discord.Interaction, fruits: Literal['apple', 'banana', 'cherry']):
-    print("invoked")
-    await interaction.response.send_message(f'Your favourite fruit is {fruits}.')
+        await interaction.response.send_message(f'Error: {e}', ephemeral=True)
 
 if __name__ == '__main__':
     print("logging in...")

@@ -1,37 +1,37 @@
-from turtle import up
 from pymongo.mongo_client import MongoClient
-from typing import TypedDict, Literal, Optional
+from typing import TypedDict, Literal
 
 
 class Canister(TypedDict):
-    canister_id: str
-    standard: Literal['ext', 'dip721']
-    min: int
-    max: Optional[int]
+    canisterId: str
+    tokenStandard: Literal['ext', 'dip721']
+    role: str
     name: str
-    users: list[int]
+    users: list[str]
 
 
 class GlueGuild(TypedDict):
-    server_id: int
+    guildId: int
     canisters: list[Canister]
 
 
 class Database:
     def __init__(self):
         self.client = MongoClient()
-        self.db = self.client.db
-        self.collection = self.db.collection
+        self.db = self.client.glue_discord
+        self.collection = self.db.guilds
 
     def insert(self, document: GlueGuild):
         # if the document already exists, update it
-        if self.collection.find_one({"server_id": document['server_id']}):
-            self.collection.update_one(
-                {"server_id": document['server_id']},
-                {"$push":
-                    # we have to use the first element of the list, otherwise we have nested lists
-                    {"canisters": document['canisters'][0]}
-                 })
+        if self.collection.find_one({"guildId": document['guildId']}):
+            # make sure the canisters are unique
+            if not self.collection.find_one({"canisters.canisterId": document['canisters'][0]['canisterId']}):
+                self.collection.update_one(
+                    {"guildId": document['guildId']},
+                    {"$push":
+                        # we have to use the first element of the list, otherwise we have nested lists
+                        {"canisters": document['canisters'][0]}
+                     })
         else:
             self.collection.insert_one(document)   # type: ignore
 
