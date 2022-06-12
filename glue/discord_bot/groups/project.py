@@ -1,4 +1,4 @@
-from discord import Guild, app_commands
+from discord import app_commands
 import discord
 from glue.database.database import Database
 from glue.discord_bot.ui.button import Button
@@ -59,22 +59,23 @@ class Project(app_commands.Group):
         if not guild or not guild['canisters']:
             await interaction.response.send_message('No projects found', ephemeral=True)
         else:
-            message_string = ''
+            messages = []
             for project in guild['canisters']:
-                message_string += f'📇 name: {project["name"]}\n🪪canister id: {project["canisterId"]}\n🕵🏿‍♂️ role: {project["role"]}\n💾 standard: {project["tokenStandard"]}\n\n'
-            await interaction.response.send_message(message_string, ephemeral=True)
+                messages.append(discord.Embed(
+                    title=f'{project["name"]}', description=f'📇 **name:** {project["name"]}\n🪪 **canister id:** {project["canisterId"]}\n🕵🏿‍♂️ **role:** {project["role"]}\n💾 **standard:** {project["tokenStandard"]}\n\n'))
+            await interaction.response.send_message(embeds=messages, ephemeral=True)
 
-    @app_commands.command()
-    @app_commands.guild_only()
-    @app_commands.default_permissions()
-    @app_commands.describe(
+    @ app_commands.command()
+    @ app_commands.guild_only()
+    @ app_commands.default_permissions()
+    @ app_commands.describe(
         canister_id='Please specify the canister ID of the project you want to delete, e.g. `pk6rk-6aaaa-aaaae-qaazq-cai`',
     )
     async def remove(self, interaction: discord.Interaction, canister_id: str):
         """Remove a project"""
         try:
-            result = db.delete_canister(interaction.guild_id, canister_id)
-            await interaction.response.send_message(f'Removed project {canister_id} from database. {result}', ephemeral=True)
+            db.delete_canister(interaction.guild_id, canister_id)
+            await interaction.response.send_message(ephemeral=True, embed=discord.Embed(title='Removed project', description=f'Removed project __{canister_id}__ from database.'))
         except Exception as e:
             await interaction.response.send_message(f'Error: {e}', ephemeral=True)
 

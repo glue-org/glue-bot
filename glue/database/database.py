@@ -49,9 +49,9 @@ class Database:
 
     def delete_canister(self, guild_id, canister_id):
         return self.collection.update_one(
-            {"server_id": guild_id},
+            {"guildId": guild_id},
             {"$pull":
              {"canisters":
-              {"canister_id": canister_id}
+              {"canisterId": canister_id}
               }
              })
