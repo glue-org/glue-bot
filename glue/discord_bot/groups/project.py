@@ -31,21 +31,9 @@ class Project(app_commands.Group):
         """Set up an NFT project"""
         try:
             if interaction.guild_id:
-                document: GlueGuild = {
-                    "guildId": str(interaction.guild_id),
-                    "canisters": [
-                        {
-                            "canisterId": canister_id,
-                            "tokenStandard": standard,
-                            "role": role,
-                            "name": name,
-                            "users": []
-                        }
-                    ]
-
-                }
-                db.insert(document)
-                await interaction.response.send_message(f'Added project {name} to database', ephemeral=True)
+                db.create_guild(guild_id=str(
+                    interaction.guild_id), canister_id=canister_id, token_standard=standard, role=role, name=name)
+                await interaction.response.send_message(f'Added project _{name}_ to database', ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(f'Error: {e}', ephemeral=True)
 
@@ -54,8 +42,8 @@ class Project(app_commands.Group):
     @app_commands.default_permissions()
     async def list(self, interaction: discord.Interaction):
         """List all projects"""
-        guild: Optional[GlueGuild] = db.find_one(
-            {"guildId": interaction.guild_id})
+        guild: Optional[GlueGuild] = db.get_guild_by_id(
+            str(interaction.guild_id))
         if not guild or not guild['canisters']:
             await interaction.response.send_message('No projects found', ephemeral=True)
         else:
@@ -74,7 +62,7 @@ class Project(app_commands.Group):
     async def remove(self, interaction: discord.Interaction, canister_id: str):
         """Remove a project"""
         try:
-            db.delete_canister(interaction.guild_id, canister_id)
+            db.delete_canister(str(interaction.guild_id), canister_id)
             await interaction.response.send_message(ephemeral=True, embed=discord.Embed(title='Removed project', description=f'Removed project __{canister_id}__ from database.'))
         except Exception as e:
             await interaction.response.send_message(f'Error: {e}', ephemeral=True)
