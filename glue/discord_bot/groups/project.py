@@ -1,6 +1,6 @@
 from discord import app_commands
 import discord
-from glue.database.database import Database
+from glue.database.database import Guilds
 from glue.discord_bot.ui.button import Button
 from glue.discord_bot.ui.select import DropdownView
 from glue.discord_bot.ui.modal import Questionnaire
@@ -8,7 +8,7 @@ from typing import Literal, Optional
 from glue.database.database import GlueGuild
 
 # connection to database
-db = Database()
+db = Guilds()
 
 
 class Project(app_commands.Group):

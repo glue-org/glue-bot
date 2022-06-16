@@ -1,14 +1,16 @@
 from discord.ext import tasks
 from discord.ext import commands
-from discord import app_commands
 from discord import Guild
 import discord
-from dotenv import load_dotenv
-import os
+from glue.database.database import Guilds
+from glue.discord_bot.helpers import verify_ownership_for_guild
 
 TEST_GUILD_ID = "974261271857860649"  # replace with your guild id
 
 MY_GUILD = discord.Object(id=TEST_GUILD_ID)
+
+# initialize DB
+db = Guilds()
 
 
 class Bot(commands.Bot):
@@ -28,12 +30,11 @@ class Bot(commands.Bot):
         # self.add_cog()
 
     # loop
-    @tasks.loop(seconds=60)
+    @tasks.loop(seconds=10)
     async def check_ownership(self):
-        # this is where our routine should be running that checks if users still own the NFT
-        print("hi")
+        for guild in db.get_guilds():
+            verify_ownership_for_guild(guild)
 
-    # called when bot is ready
     async def on_ready(self):
         print(f"We have logged in as {self.user}.")
 

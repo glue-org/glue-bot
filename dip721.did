@@ -1,0 +1,4 @@
+type ManualReply_1 = variant { Ok : vec nat; Err : NftError };
+service : (opt InitArgs) -> {
+  ownerTokenIdentifiers : (principal) -> (ManualReply_1) query;
+}

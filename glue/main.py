@@ -5,8 +5,6 @@ import os
 import discord
 from discord import app_commands
 from glue.discord_bot.groups.project import Project
-from typing import Literal
-from glue.database.database import Database
 
 # add logging
 logger = logging.getLogger('discord')
@@ -29,12 +27,11 @@ intents.members = True
 intents.message_content = True
 bot = Bot(intents=intents)
 
+# adding project command group
 bot.tree.add_command(Project(bot))
 
-# connection to database
-db = Database()
 
-
+# adding top level command
 @bot.tree.command()
 @app_commands.guild_only()
 @app_commands.default_permissions()
