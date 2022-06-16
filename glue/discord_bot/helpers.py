@@ -1,12 +1,9 @@
-from dis import disco
 from glue.database.database import GlueUser, Users, GlueGuild
 from ic.client import Client
 from ic.identity import Identity
 from ic.agent import Agent
 from ic.agent import Principal
-from ic.candid import Types, encode
 from ic.canister import Canister
-from glue.main import bot
 from discord.utils import get
 
 # create agent
@@ -64,6 +61,8 @@ def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
 
 
 async def remove_role_from_user(user: GlueUser, guild: GlueGuild, role: str):
+    # move import to avoid circular dependencies
+    from glue.main import bot
     discord_guild = bot.get_guild(
         int(guild['guildId']))
     if discord_guild:

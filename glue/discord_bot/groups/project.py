@@ -30,9 +30,10 @@ class Project(app_commands.Group):
     async def add(self, interaction: discord.Interaction, name: str, canister_id: str, standard: Literal['ext', 'dip721'], role: str):
         """Set up an NFT project"""
         try:
-            if interaction.guild_id:
+            if interaction.guild and interaction.guild_id:
                 db.create_guild(guild_id=str(
                     interaction.guild_id), canister_id=canister_id, token_standard=standard, role=role, name=name)
+                await interaction.guild.create_role(name=role)
                 await interaction.response.send_message(f'Added project _{name}_ to database', ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(f'Error: {e}', ephemeral=True)
