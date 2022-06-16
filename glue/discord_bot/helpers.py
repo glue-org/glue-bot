@@ -43,7 +43,7 @@ def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
             return False
     else:
         dip721 = Canister(agent=agent, canister_id=canister_id,
-                          candid=ext_candid)
+                          candid=dip721_candid)
         result = dip721.ownerTokenIdentifiers(principal)   # type: ignore
         try:
             result[0]['Ok']  # type: ignore
