@@ -1,3 +1,27 @@
+<img width="1225" alt="glue-logo-wide" src="https://user-images.githubusercontent.com/32162112/174629275-00deff63-7ff2-4f5e-9df9-40576b26c30f.png">
+
+# development 👷‍♀️
+
+## prerequisites
+
+-   [`poetry`](https://python-poetry.org/)
+-   `python ^3.10` (you can use [pyenv](https://github.com/pyenv/pyenv#installation) to manage multiple versions of python)
+-   `.env` file in `/glue` with the following entries:
+
+    -   DISCORD_TOKEN
+        -   your discord bots token
+    -   FRONTEND_URL
+        -   the url the frontend that users interact with lives at. use the hostname of your local deployment of the [glue](https://github.com/glue-org/glue) frontend for development and `https://<frontend-canister-id>.ic0.app` for production
+
+## local deployment
+
+-   run `poetry install` to install all dependencies
+-   run `poetry run python glue/main.py` from the _root of this repository_ to start the bot
+
+## deploying to production
+
+-   you can run the bot within a [`screen`](https://linuxize.com/post/how-to-use-linux-screen/) session on your server
+
 # requirement analysis
 
 ## use case diagram
