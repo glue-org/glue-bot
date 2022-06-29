@@ -27,8 +27,12 @@ class GlueUser(TypedDict):
 
 class Guilds:
     def __init__(self):
-        self.client = MongoClient(
-            username=MONGO_USERNAME, password=MONGO_PW)
+        try:
+            self.client = MongoClient(
+                username=MONGO_USERNAME, password=MONGO_PW)
+        except Exception as e:
+            print("database connection error")
+            raise e
         self.db = self.client.glue_discord
         self.collection = self.db.guilds
 
