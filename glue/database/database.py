@@ -1,6 +1,7 @@
 from bson.objectid import ObjectId
 from pymongo.mongo_client import MongoClient
 from typing import Optional, TypedDict, Literal
+import urllib.parse
 import os
 
 MONGO_USERNAME = os.getenv('MONGO_USERNAME')
@@ -28,8 +29,11 @@ class GlueUser(TypedDict):
 class Guilds:
     def __init__(self):
         try:
+            # connect to local mongoDB using username and password of admin user
+            print(MONGO_PW)
+            print(MONGO_USERNAME)
             self.client = MongoClient(
-                username=MONGO_USERNAME, password=MONGO_PW)
+                f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/")
         except Exception as e:
             print("database connection error")
             raise e
