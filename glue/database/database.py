@@ -6,8 +6,8 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-MONGO_USERNAME = os.getenv('MONGO_USERNAME')
-MONGO_PW = os.getenv('MONGO_PW')
+MONGO_USERNAME = str(os.getenv('MONGO_USERNAME'))
+MONGO_PW = str(os.getenv('MONGO_PW'))
 
 
 class Canister(TypedDict):
@@ -44,7 +44,7 @@ class Guilds:
         # if the document already exists, update it
         if self.collection.find_one({"guildId": guild_id}):
             # make sure the canisters are unique
-            if not self.collection.find_one({"canisters.canisterId": canister_id}):
+            if not self.collection.find_one({"guildId": guild_id, "canisters.canisterId": canister_id}):
                 # if they are not, update the canister
                 self.collection.update_one(
                     {"guildId": guild_id},
