@@ -28,7 +28,7 @@ class GlueUser(TypedDict):
 class Guilds:
     def __init__(self):
         self.client = MongoClient(
-            username=MONGO_USERNAME, password=MONGO_PW, authSource='glue_discord')
+            username=MONGO_USERNAME, password=MONGO_PW)
         self.db = self.client.glue_discord
         self.collection = self.db.guilds
 
