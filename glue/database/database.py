@@ -3,7 +3,9 @@ from pymongo.mongo_client import MongoClient
 from typing import Optional, TypedDict, Literal
 import urllib.parse
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 MONGO_USERNAME = os.getenv('MONGO_USERNAME')
 MONGO_PW = os.getenv('MONGO_PW')
 
