@@ -1,6 +1,10 @@
 from bson.objectid import ObjectId
 from pymongo.mongo_client import MongoClient
 from typing import Optional, TypedDict, Literal
+import os
+
+MONGO_USERNAME = os.getenv('MONGO_USERNAME')
+MONGO_PW = os.getenv('MONGO_PW')
 
 
 class Canister(TypedDict):
@@ -23,7 +27,8 @@ class GlueUser(TypedDict):
 
 class Guilds:
     def __init__(self):
-        self.client = MongoClient()
+        self.client = MongoClient(
+            username=MONGO_USERNAME, password=MONGO_PW, authSource='glue_discord')
         self.db = self.client.glue_discord
         self.collection = self.db.guilds
 
