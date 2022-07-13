@@ -12,7 +12,7 @@ MONGO_PW = os.getenv('MONGO_PW')
 
 class Canister(TypedDict):
     canisterId: str
-    tokenStandard: Literal['ext', 'dip721']
+    tokenStandard: Literal['ext', 'dip721', 'ogy']
     role: str
     name: str
     users: list[ObjectId]
@@ -43,7 +43,7 @@ class Guilds:
         self.db = self.client.glue_discord
         self.collection = self.db.guilds
 
-    def create_guild(self, guild_id: str, canister_id: str, token_standard: Literal['ext', 'dip721'], role: str, name: str):
+    def create_guild(self, guild_id: str, canister_id: str, token_standard: Literal['ext', 'dip721', 'ogy'], role: str, name: str):
         # if the document already exists, update it
         if self.collection.find_one({"guildId": guild_id}):
             # make sure the canisters are unique

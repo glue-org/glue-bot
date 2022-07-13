@@ -4,10 +4,13 @@ from discord import Guild
 import discord
 from glue.database.database import Guilds
 from glue.discord_bot.helpers import verify_ownership_for_guild
+from dotenv import load_dotenv
+import os
 
-TEST_GUILD_ID = "974261271857860649"  # replace with your guild id
+load_dotenv()
+MODE = os.getenv('MODE')
+TEST_GUILD_ID = os.getenv('TEST_GUILD_ID')
 
-MY_GUILD = discord.Object(id=TEST_GUILD_ID)
 
 # initialize DB
 db = Guilds()
@@ -22,10 +25,15 @@ class Bot(commands.Bot):
     # By doing so, we don't have to wait up to an hour until they are shown to the end-user.
     async def setup_hook(self):
         # This copies the global commands over to your guild for development.
-        # self.tree.copy_global_to(guild=MY_GUILD)
-        # await self.tree.sync(guild=MY_GUILD)
+        if MODE == "development":
+            if not TEST_GUILD_ID:
+                raise Exception("TEST_GUILD_ID not set in .env")
+            MY_GUILD = discord.Object(id=TEST_GUILD_ID)
+            self.tree.copy_global_to(guild=MY_GUILD)
+            await self.tree.sync(guild=MY_GUILD)
 
-        await self.tree.sync()
+        else:
+            await self.tree.sync()
 
         self.check_ownership.start()
 
@@ -52,12 +60,3 @@ class Bot(commands.Bot):
                 f"If you want to setup an NFT project to grant holder roles to members, run the `/project add` command in any channel of the respective server.\n"
                 f"After you setup your first project, you can run `/generate` to generate your unique verification URL 😊\n"
             )
-
-    # on_message event is called when a message is sent
-    # async def on_message(self, message):
-    #     # ignore our own messages
-    #     if message.author == self.user:
-    #         return
-
-    #     if message.content.startswith('$hello'):
-    #         await message.channel.send('Hello!')

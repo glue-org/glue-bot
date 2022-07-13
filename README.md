@@ -18,6 +18,11 @@
     -   MONGO_PW
         -   the mongo db usernames password
         -   omit if your database doesnt require authentication
+    -   MODE
+        -   this can either be 'development' or 'production'
+        -   in development mode, the bot commands will be synced to your guild only. in production mode, the bot commands will be synced to all guilds.
+    -   TEST_GUILD_ID
+        -   the id of the guild that the bot will sync the commands to. this is only used in development mode.
 
 ## local deployment
 
