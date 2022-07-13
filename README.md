@@ -12,6 +12,12 @@
         -   your discord bots token
     -   FRONTEND_URL
         -   the url the frontend that users interact with lives at. use the hostname of your local deployment of the [glue](https://github.com/glue-org/glue) frontend for development and `https://<frontend-canister-id>.ic0.app` for production
+    -   MONGO_USERNAME
+        -   your mongo dbs username
+        -   omit if your database doesnt require authentication
+    -   MONGO_PW
+        -   the mongo db usernames password
+        -   omit if your database doesnt require authentication
 
 ## local deployment
 

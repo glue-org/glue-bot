@@ -6,8 +6,8 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-MONGO_USERNAME = str(os.getenv('MONGO_USERNAME'))
-MONGO_PW = str(os.getenv('MONGO_PW'))
+MONGO_USERNAME = os.getenv('MONGO_USERNAME')
+MONGO_PW = os.getenv('MONGO_PW')
 
 
 class Canister(TypedDict):
@@ -32,8 +32,11 @@ class Guilds:
     def __init__(self):
         try:
             # connect to local mongoDB using username and password of admin user
-            self.client = MongoClient(
-                f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/")
+            if MONGO_USERNAME is not None and MONGO_PW is not None:
+                self.client = MongoClient(
+                    f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/")
+            else:
+                self.client = MongoClient()
         except Exception as e:
             print("database connection error")
             raise e
@@ -108,8 +111,11 @@ class Users:
     def __init__(self):
         try:
             # connect to local mongoDB using username and password of admin user
-            self.client = MongoClient(
-                f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/")
+            if MONGO_USERNAME is not None and MONGO_PW is not None:
+                self.client = MongoClient(
+                    f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/")
+            else:
+                self.client = MongoClient()
         except Exception as e:
             print("database connection error")
             raise e
