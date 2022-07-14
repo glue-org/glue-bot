@@ -35,19 +35,18 @@ class Bot(commands.Bot):
         else:
             await self.tree.sync()
 
-        self.check_ownership.start()
-
         # to add a cog do the following
         # self.add_cog()
 
-    # loop
-    @tasks.loop(seconds=60*60)
+    @tasks.loop(seconds=10)
     async def check_ownership(self):
         for guild in db.get_guilds():
-            await verify_ownership_for_guild(guild)
+            await verify_ownership_for_guild(guild, self)
 
     async def on_ready(self):
         print(f"We have logged in as {self.user}.")
+        # this has to be callled here instead of in setup_hook because it needs to be called after the bot is logged in
+        self.check_ownership.start()
 
     # called when bot is added to guild
     async def on_guild_join(self, guild: Guild):

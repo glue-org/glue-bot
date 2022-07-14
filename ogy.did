@@ -1,0 +1,127 @@
+type Account = variant {
+  account_id : text;
+  "principal" : principal;
+  extensible : CandyValue;
+};
+type BalanceResponse = record {
+  nfts : vec text;
+  sales : vec EscrowRecord;
+  stake : vec StakeRecord;
+  multi_canister : opt vec principal;
+  escrow : vec EscrowRecord;
+};
+type CandyValue = variant {
+  Int : int;
+  Nat : nat;
+  Empty;
+  Nat16 : nat16;
+  Nat32 : nat32;
+  Nat64 : nat64;
+  Blob : vec nat8;
+  Bool : bool;
+  Int8 : int8;
+  Nat8 : nat8;
+  Nats : variant { thawed : vec nat; frozen : vec nat };
+  Text : text;
+  Bytes : variant { thawed : vec nat8; frozen : vec nat8 };
+  Int16 : int16;
+  Int32 : int32;
+  Int64 : int64;
+  Option : opt CandyValue;
+  Floats : variant { thawed : vec float64; frozen : vec float64 };
+  Float : float64;
+  Principal : principal;
+  Array : variant { thawed : vec CandyValue; frozen : vec CandyValue };
+  Class : vec Property;
+};
+type Errors = variant {
+  nyi;
+  storage_configuration_error;
+  escrow_withdraw_payment_failed;
+  token_not_found;
+  owner_not_found;
+  content_not_found;
+  auction_ended;
+  out_of_range;
+  sale_id_does_not_match;
+  sale_not_found;
+  item_not_owned;
+  property_not_found;
+  validate_trx_wrong_host;
+  withdraw_too_large;
+  content_not_deserializable;
+  bid_too_low;
+  validate_deposit_wrong_amount;
+  existing_sale_found;
+  asset_mismatch;
+  escrow_cannot_be_removed;
+  deposit_burned;
+  cannot_restage_minted_token;
+  cannot_find_status_in_metadata;
+  receipt_data_mismatch;
+  validate_deposit_failed;
+  unauthorized_access;
+  item_already_minted;
+  no_escrow_found;
+  escrow_owner_not_the_owner;
+  improper_interface;
+  app_id_not_found;
+  token_non_transferable;
+  sale_not_over;
+  update_class_error;
+  malformed_metadata;
+  token_id_mismatch;
+  id_not_found_in_metadata;
+  auction_not_started;
+  library_not_found;
+  attempt_to_stage_system_data;
+  validate_deposit_wrong_buyer;
+  not_enough_storage;
+  sales_withdraw_payment_failed;
+};
+type EscrowRecord = record {
+  token : TokenSpec;
+  token_id : text;
+  seller : Account;
+  lock_to_date : opt int;
+  buyer : Account;
+  amount : nat;
+  sale_id : opt text;
+};
+type ICTokenSpec = record {
+  fee : nat;
+  decimals : nat;
+  canister : principal;
+  standard : variant { EXTFungible; DIP20; Ledger };
+  symbol : text;
+};
+type OrigynError = record {
+  "text" : text;
+  error : Errors;
+  number : nat32;
+  flag_point : text;
+};
+type Principal = principal;
+type Property = record {
+  value : CandyValue;
+  name : text;
+  immutable : bool;
+};
+type Result_19 = variant {
+  ok : BalanceResponse;
+  err : OrigynError;
+};
+type StakeRecord = record {
+  staker : Account;
+  token_id : text;
+  amount : nat;
+};
+type TokenSpec = variant {
+  ic : ICTokenSpec;
+  extensible : CandyValue;
+};
+service : {
+  balance_of_nft_origyn : (
+      Account,
+    ) -> (Result_19) query;
+}

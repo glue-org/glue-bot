@@ -3,7 +3,9 @@ from ic.client import Client
 from ic.identity import Identity
 from ic.agent import Agent
 from ic.agent import Principal
+from discord.ext import commands
 from ic.canister import Canister
+from ic.candid import encode, Types
 from discord.utils import get
 
 # create agent
@@ -16,9 +18,10 @@ db = Users()
 
 ext_candid = open('ext.did').read()
 dip721_candid = open('dip721.did').read()
+ogy_candid = open('ogy.did').read()
 
 
-async def verify_ownership_for_guild(guild: GlueGuild):
+async def verify_ownership_for_guild(guild: GlueGuild, bot: commands.Bot):
     for canister in guild['canisters']:
         for user_id in canister['users']:
             # get the user from the database
@@ -35,7 +38,7 @@ async def verify_ownership_for_guild(guild: GlueGuild):
                 if not has_token:
                     # remove the role from the user
                     await remove_role_from_user(
-                        user_from_db, guild, canister['role'])
+                        user_from_db, guild, canister['role'], bot)
 
 
 def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
@@ -47,22 +50,47 @@ def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
         try:
             result[0]['ok']  # type: ignore
             return True
-        except KeyError:
+        except Exception:
             return False
-    else:
+    elif standard == 'dip721':
         dip721 = Canister(agent=agent, canister_id=canister_id,
                           candid=dip721_candid)
-        result = dip721.ownerTokenIdentifiers(principal)   # type: ignore
+        result = dip721.ownerTokenIdentifiers(principal)  # type: ignore
         try:
-            result[0]['Ok']  # type: ignore
-            return True
-        except KeyError:
+            if len(result[0]['Ok']) != 0:  # type: ignore
+                return True
+        except Exception:
             return False
+    elif standard == 'ogy':
+        types = Types.Variant({'principal': Types.Principal})  # type: ignore
+        val = {'principal': principal}
+
+        params = [
+            {
+                'type': types,
+                'value': val
+            },
+        ]
+
+        result = agent.query_raw(
+            canister_id, "balance_of_nft_origyn", encode(params))
+
+        # ogy = Canister(agent=agent, canister_id=canister_id,
+        #                candid=ogy_candid)
+        # result = ogy.balance_of_nft_origyn({   # type: ignore
+        #     'principal': principal,
+        # })
+
+        try:
+            if len(result[0]['ok']['_1224950711']) != 0:  # type: ignore
+                return True
+        except Exception:
+            return False
+    return False
 
 
-async def remove_role_from_user(user: GlueUser, guild: GlueGuild, role: str):
+async def remove_role_from_user(user: GlueUser, guild: GlueGuild, role: str, bot: commands.Bot):
     # move import to avoid circular dependencies
-    from glue.main import bot
     discord_guild = bot.get_guild(
         int(guild['guildId']))
     if discord_guild:
