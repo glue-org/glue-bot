@@ -48,8 +48,8 @@ def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
         account = Principal.from_str(principal).to_account_id().to_str()[:2]
         result = ext.tokens(account)  # type: ignore
         try:
-            result[0]['ok']  # type: ignore
-            return True
+            if len(result[0]['ok']) != 0:  # type: ignore
+                return True
         except Exception:
             return False
     elif standard == 'dip721':
