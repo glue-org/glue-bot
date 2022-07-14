@@ -6,13 +6,13 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-MONGO_USERNAME = str(os.getenv('MONGO_USERNAME'))
-MONGO_PW = str(os.getenv('MONGO_PW'))
+MONGO_USERNAME = os.getenv('MONGO_USERNAME')
+MONGO_PW = os.getenv('MONGO_PW')
 
 
 class Canister(TypedDict):
     canisterId: str
-    tokenStandard: Literal['ext', 'dip721']
+    tokenStandard: Literal['ext', 'dip721', 'ogy']
     role: str
     name: str
     users: list[ObjectId]
@@ -32,15 +32,18 @@ class Guilds:
     def __init__(self):
         try:
             # connect to local mongoDB using username and password of admin user
-            self.client = MongoClient(
-                f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/")
+            if MONGO_USERNAME is not None and MONGO_PW is not None:
+                self.client = MongoClient(
+                    f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/")
+            else:
+                self.client = MongoClient()
         except Exception as e:
             print("database connection error")
             raise e
         self.db = self.client.glue_discord
         self.collection = self.db.guilds
 
-    def create_guild(self, guild_id: str, canister_id: str, token_standard: Literal['ext', 'dip721'], role: str, name: str):
+    def create_guild(self, guild_id: str, canister_id: str, token_standard: Literal['ext', 'dip721', 'ogy'], role: str, name: str):
         # if the document already exists, update it
         if self.collection.find_one({"guildId": guild_id}):
             # make sure the canisters are unique
@@ -108,8 +111,11 @@ class Users:
     def __init__(self):
         try:
             # connect to local mongoDB using username and password of admin user
-            self.client = MongoClient(
-                f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/")
+            if MONGO_USERNAME is not None and MONGO_PW is not None:
+                self.client = MongoClient(
+                    f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/")
+            else:
+                self.client = MongoClient()
         except Exception as e:
             print("database connection error")
             raise e

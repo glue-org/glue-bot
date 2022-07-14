@@ -1,5 +1,6 @@
 from discord import app_commands
 import discord
+from ic import Principal
 from glue.database.database import Guilds
 from glue.discord_bot.ui.button import Button
 from glue.discord_bot.ui.select import DropdownView
@@ -27,9 +28,12 @@ class Project(app_commands.Group):
     )
     @app_commands.guild_only()
     @app_commands.default_permissions()
-    async def add(self, interaction: discord.Interaction, name: str, canister_id: str, standard: Literal['ext', 'dip721'], role: str):
+    async def add(self, interaction: discord.Interaction, name: str, canister_id: str, standard: Literal['ext', 'dip721', 'ogy'], role: str):
         """Set up an NFT project"""
         try:
+            # check if the canister id provided is valid
+            Principal.from_str(canister_id)
+
             if interaction.guild and interaction.guild_id:
                 db.create_guild(guild_id=str(
                     interaction.guild_id), canister_id=canister_id, token_standard=standard, role=role, name=name)

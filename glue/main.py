@@ -47,4 +47,7 @@ async def generate(interaction: discord.Interaction):
 
 if __name__ == '__main__':
     print("logging in...")
-    bot.run(DISCORD_TOKEN)
+    if DISCORD_TOKEN:
+        bot.run(DISCORD_TOKEN)
+    else:
+        print("no discord token found. please set DISCORD_TOKEN in .env")
