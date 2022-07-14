@@ -45,7 +45,7 @@ def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
     if standard == 'ext':
         ext = Canister(agent=agent, canister_id=canister_id,
                        candid=ext_candid)
-        account = Principal.from_str(principal).to_account_id().to_str()[:2]
+        account = Principal.from_str(principal).to_account_id().to_str()[2:]
         result = ext.tokens(account)  # type: ignore
         try:
             if len(result[0]['ok']) != 0:  # type: ignore
