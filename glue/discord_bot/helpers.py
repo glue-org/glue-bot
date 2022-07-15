@@ -7,6 +7,8 @@ from discord.ext import commands
 from ic.canister import Canister
 from ic.candid import encode, Types
 from discord.utils import get
+import functools
+import asyncio
 
 # create agent
 iden = Identity()
@@ -21,6 +23,14 @@ dip721_candid = open('dip721.did').read()
 ogy_candid = open('ogy.did').read()
 
 
+def to_thread(func):
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        return await asyncio.to_thread(func, *args, **kwargs)
+    return wrapper
+
+
+@to_thread
 async def verify_ownership_for_guild(guild: GlueGuild, bot: commands.Bot):
     for canister in guild['canisters']:
         for user_id in canister['users']:
