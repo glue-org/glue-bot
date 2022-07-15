@@ -23,14 +23,6 @@ dip721_candid = open('dip721.did').read()
 ogy_candid = open('ogy.did').read()
 
 
-def to_thread(func):
-    @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
-        return await asyncio.to_thread(func, *args, **kwargs)
-    return wrapper
-
-
-@to_thread
 async def verify_ownership_for_guild(guild: GlueGuild, bot: commands.Bot):
     for canister in guild['canisters']:
         for user_id in canister['users']:
@@ -41,7 +33,7 @@ async def verify_ownership_for_guild(guild: GlueGuild, bot: commands.Bot):
                 has_token = False
                 for principal in user_from_db['principals']:
                     # check if all returns in the for loop are true
-                    if user_has_tokens(
+                    if await user_has_tokens(
                             canister['tokenStandard'], principal, canister['canisterId']):
                         has_token = True
                         break
@@ -51,12 +43,13 @@ async def verify_ownership_for_guild(guild: GlueGuild, bot: commands.Bot):
                         user_from_db, guild, canister['role'], bot)
 
 
-def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
+async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
+    print('im running')
     if standard == 'ext':
         ext = Canister(agent=agent, canister_id=canister_id,
                        candid=ext_candid)
         account = Principal.from_str(principal).to_account_id().to_str()[2:]
-        result = ext.tokens(account)  # type: ignore
+        result = await ext.tokens_async(account)  # type: ignore
         try:
             if len(result[0]['ok']) != 0:  # type: ignore
                 return True
@@ -65,7 +58,7 @@ def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
     elif standard == 'dip721':
         dip721 = Canister(agent=agent, canister_id=canister_id,
                           candid=dip721_candid)
-        result = dip721.ownerTokenIdentifiers(principal)  # type: ignore
+        result = await dip721.ownerTokenIdentifiers_async(principal)  # type: ignore
         try:
             if len(result[0]['Ok']) != 0:  # type: ignore
                 return True
@@ -82,7 +75,7 @@ def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
             },
         ]
 
-        result = agent.query_raw(
+        result = await agent.query_raw_async(
             canister_id, "balance_of_nft_origyn", encode(params))
 
         # ogy = Canister(agent=agent, canister_id=canister_id,
