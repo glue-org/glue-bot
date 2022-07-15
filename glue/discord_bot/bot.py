@@ -39,7 +39,7 @@ class Bot(commands.Bot):
         # to add a cog do the following
         # self.add_cog()
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(seconds=60*60)
     async def check_ownership(self):
         for guild in db.get_guilds():
             await verify_ownership_for_guild(guild, self)
