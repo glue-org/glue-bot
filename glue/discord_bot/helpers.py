@@ -44,7 +44,6 @@ async def verify_ownership_for_guild(guild: GlueGuild, bot: commands.Bot):
 
 
 async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
-    print('im running')
     if standard == 'ext':
         ext = Canister(agent=agent, canister_id=canister_id,
                        candid=ext_candid)
