@@ -60,8 +60,6 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
             if len(result[0]['ok']) != 0:  # type: ignore
                 return True
         except Exception:
-            logger.warn(
-                f"\nno NFT\nprincipal: {principal}\ncanister_id: {canister_id}")
             return False
     elif standard == 'dip721':
         dip721 = Canister(agent=agent, canister_id=canister_id,
@@ -71,8 +69,6 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
             if len(result[0]['Ok']) != 0:  # type: ignore
                 return True
         except Exception:
-            logger.warn(
-                f"\nno NFT\nprincipal: {principal}\ncanister_id: {canister_id}")
             return False
     elif standard == 'ogy':
         types = Types.Variant({'principal': Types.Principal})  # type: ignore
@@ -98,11 +94,7 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
             if len(result[0]['value']['_24860']['_1224950711']) != 0:  # type: ignore
                 return True
         except Exception:
-            logger.warn(
-                f"\nno NFT\nprincipal: {principal}\ncanister_id: {canister_id}")
             return False
-    logger.warn(
-        f"\nno NFT\nprincipal: {principal}\ncanister_id: {canister_id}")
     return False
 
 
@@ -117,4 +109,7 @@ async def remove_role_from_user(user: GlueUser, guild: GlueGuild, role: str, bot
         role_snowflake = get(discord_guild.roles, name=role)
         discord_user = discord_guild.get_member(int(user['discordId']))
         if discord_user and role_snowflake:
-            await discord_user.remove_roles(role_snowflake)
+            try:
+                await discord_user.remove_roles(role_snowflake)
+            except Exception:
+                logger.exception(Exception)
