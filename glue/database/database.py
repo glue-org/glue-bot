@@ -89,6 +89,12 @@ class Guilds:
     def get_guild_by_id(self, guild_id: str):
         return self.collection.find_one({"guildId": guild_id})
 
+    def delete_user_from_canister(self, guild_id: str, canister_id: str, user_id: ObjectId):
+        self.collection.find_one_and_update(
+            {"guildId": guild_id, "canisters.canisterId": canister_id},
+            {"$pull": {"canisters.$.users": user_id}}
+        )
+
     def delete_canister(self, guild_id: str, canister_id: str):
         # if the document already exists, update it
         if not self.collection.find_one({"guildId": guild_id, "canisters.canisterId": canister_id}):

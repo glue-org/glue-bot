@@ -1,6 +1,5 @@
-from email.mime import image
 from discord.ext import tasks
-from discord.ext import commands
+from discord import app_commands
 from discord import Guild
 import discord
 from glue.database.database import Guilds
@@ -17,9 +16,10 @@ TEST_GUILD_ID = os.getenv('TEST_GUILD_ID')
 db = Guilds()
 
 
-class Bot(commands.Bot):
+class Bot(discord.Client):
     def __init__(self, *, intents: discord.Intents):
-        super().__init__(intents=intents, command_prefix="")
+        super().__init__(intents=intents)
+        self.tree = app_commands.CommandTree(self)
 
     # In this basic example, we just synchronize the app commands to one guild.
     # Instead of specifying a guild to every command, we copy over our global commands instead.

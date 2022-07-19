@@ -1,14 +1,16 @@
-from glue.database.database import GlueUser, Users, GlueGuild
+from glue.database.database import GlueUser, Users, GlueGuild, Guilds
 from ic.client import Client
 from ic.identity import Identity
 from ic.agent import Agent
 from ic.agent import Principal
-from discord.ext import commands
 from ic.canister import Canister
 from ic.candid import encode, Types
+import discord
 from discord.utils import get
-import functools
-import asyncio
+import logging
+
+# create logger
+logger = logging.getLogger('discord')
 
 # create agent
 iden = Identity()
@@ -16,18 +18,20 @@ client = Client()
 agent = Agent(iden, client)
 
 # create DB
-db = Users()
+user_db = Users()
+guild_db = Guilds()
 
 ext_candid = open('ext.did').read()
 dip721_candid = open('dip721.did').read()
 ogy_candid = open('ogy.did').read()
 
 
-async def verify_ownership_for_guild(guild: GlueGuild, bot: commands.Bot):
+async def verify_ownership_for_guild(guild: GlueGuild, bot: discord.Client):
     for canister in guild['canisters']:
+        logger.info(f"verifying ownership for canister {canister['name']}")
         for user_id in canister['users']:
             # get the user from the database
-            user_from_db = db.get_user(user_id)
+            user_from_db = user_db.get_user(user_id)
             if user_from_db:
                 # for all the attached principals, check if the user owns the NFT
                 has_token = False
@@ -41,6 +45,9 @@ async def verify_ownership_for_guild(guild: GlueGuild, bot: commands.Bot):
                     # remove the role from the user
                     await remove_role_from_user(
                         user_from_db, guild, canister['role'], bot)
+                    # remove the user from the project
+                    guild_db.delete_user_from_canister(
+                        guild['guildId'], canister['canisterId'], user_id)
 
 
 async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
@@ -53,6 +60,8 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
             if len(result[0]['ok']) != 0:  # type: ignore
                 return True
         except Exception:
+            logger.warn(
+                f"\nno NFT\nprincipal: {principal}\ncanister_id: {canister_id}")
             return False
     elif standard == 'dip721':
         dip721 = Canister(agent=agent, canister_id=canister_id,
@@ -62,6 +71,8 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
             if len(result[0]['Ok']) != 0:  # type: ignore
                 return True
         except Exception:
+            logger.warn(
+                f"\nno NFT\nprincipal: {principal}\ncanister_id: {canister_id}")
             return False
     elif standard == 'ogy':
         types = Types.Variant({'principal': Types.Principal})  # type: ignore
@@ -84,18 +95,24 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
         # })
 
         try:
-            if len(result[0]['ok']['_1224950711']) != 0:  # type: ignore
+            if len(result[0]['value']['_24860']['_1224950711']) != 0:  # type: ignore
                 return True
         except Exception:
+            logger.warn(
+                f"\nno NFT\nprincipal: {principal}\ncanister_id: {canister_id}")
             return False
+    logger.warn(
+        f"\nno NFT\nprincipal: {principal}\ncanister_id: {canister_id}")
     return False
 
 
-async def remove_role_from_user(user: GlueUser, guild: GlueGuild, role: str, bot: commands.Bot):
+async def remove_role_from_user(user: GlueUser, guild: GlueGuild, role: str, bot: discord.Client):
     # move import to avoid circular dependencies
     discord_guild = bot.get_guild(
         int(guild['guildId']))
     if discord_guild:
+        logger.warn(
+            f"removing role {role} from user {user['discordId']} in guild {discord_guild}")
         # get role by name
         role_snowflake = get(discord_guild.roles, name=role)
         discord_user = discord_guild.get_member(int(user['discordId']))
