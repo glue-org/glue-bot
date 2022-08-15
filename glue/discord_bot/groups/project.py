@@ -28,7 +28,7 @@ class Project(app_commands.Group):
     )
     @app_commands.guild_only()
     @app_commands.default_permissions()
-    async def add(self, interaction: discord.Interaction, name: str, canister_id: str, standard: Literal['ext', 'dip721', 'ogy'], role: str):
+    async def add(self, interaction: discord.Interaction, name: str, canister_id: str, standard: Literal['ext', 'dip721', 'ogy', 'icp-ledger'], role: str):
         """Set up an NFT project"""
         try:
             # check if the canister id provided is valid
