@@ -25,6 +25,7 @@ ext_candid = open('ext.did').read()
 dip721_candid = open('dip721.did').read()
 ogy_candid = open('ogy.did').read()
 icp_ledger_candid = open('icp-ledger.did').read()
+ccc_candid = open('ccc.did').read()
 
 
 async def verify_ownership_for_guild(guild: GlueGuild, bot: discord.Client):
@@ -91,6 +92,16 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
         result = await icp_ledger.account_balance_async({'account' : account})  # type: ignore
         try:
             if result[0]['e8s'] != 0:  # type: ignore
+                return True
+        except Exception:
+            return False
+    elif standard == 'ccc':
+        ccc = Canister(agent=agent, canister_id=canister_id,
+                          candid=ccc_candid)
+
+        result = await ccc.balanceOf_async(principal)  # type: ignore
+        try:
+            if result[0] != 0:  # type: ignore
                 return True
         except Exception:
             return False
