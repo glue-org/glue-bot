@@ -72,27 +72,14 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
         except Exception:
             return False
     elif standard == 'ogy':
-        types = Types.Variant({'principal': Types.Principal})  # type: ignore
-        val = {'principal': principal}
-
-        params = [
-            {
-                'type': types,
-                'value': val
-            },
-        ]
-
-        result = await agent.query_raw_async(
-            canister_id, "balance_of_nft_origyn", encode(params))
-
-        # ogy = Canister(agent=agent, canister_id=canister_id,
-        #                candid=ogy_candid)
-        # result = ogy.balance_of_nft_origyn({   # type: ignore
-        #     'principal': principal,
-        # })
+        ogy = Canister(agent=agent, canister_id=canister_id,
+                       candid=ogy_candid)
+        result = await ogy.balance_of_nft_origyn_async({   # type: ignore
+            'principal': principal,
+        })
 
         try:
-            if len(result[0]['value']['_24860']['_1224950711']) != 0:  # type: ignore
+            if len(result[0]['ok']['nfts']) != 0:  # type: ignore
                 return True
         except Exception:
             return False
