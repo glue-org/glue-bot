@@ -39,10 +39,13 @@ async def verify_ownership_for_guild(guild: GlueGuild, bot: discord.Client):
                 has_token = False
                 for principal in user_from_db['principals']:
                     # check if all returns in the for loop are true
-                    if await user_has_tokens(
-                            canister['tokenStandard'], principal, canister['canisterId']):
-                        has_token = True
-                        break
+                    try:
+                        if await user_has_tokens(
+                                canister['tokenStandard'], principal, canister['canisterId']):
+                            has_token = True
+                            break
+                    except Exception:
+                        logger.exception(Exception)
                 if not has_token:
                     # remove the role from the user
                     await remove_role_from_user(
