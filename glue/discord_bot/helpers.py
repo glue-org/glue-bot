@@ -41,8 +41,9 @@ async def verify_ownership_for_guild(guild: GlueGuild, bot: discord.Client):
                 for principal in user_from_db['principals']:
                     # check if all returns in the for loop are true
                     try:
-                        if await user_has_tokens(
-                                canister['tokenStandard'], principal, canister['canisterId']):
+                        tokens = await user_has_tokens(
+                            canister['tokenStandard'], principal, canister['canisterId'])
+                        if tokens:
                             has_token = True
                             break
                     except Exception:
