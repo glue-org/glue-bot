@@ -35,7 +35,9 @@ icrc_1_candid = open('icrc-1.did').read()
 async def verify_ownership_for_guild(guild: GlueGuild, bot: discord.Client):
     for canister in guild['canisters']:
         logger.info(f"verifying ownership for canister {canister['name']}")
-        result = await asyncio.gather(*[verify_ownership_for_user(user_id, bot, canister, guild) for user_id in canister['users']]) 
+        for user_id in canister['users']:
+            await verify_ownership_for_user(user_id, bot, canister, guild)
+        # result = await asyncio.gather(*[verify_ownership_for_user(user_id, bot, canister, guild) for user_id in canister['users']]) 
 
 async def verify_ownership_for_user(user_id: ObjectId, bot: discord.Client, canister : GlueCanister, guild: GlueGuild):
     # get the user from the database
