@@ -6,6 +6,8 @@ from glue.database.database import Guilds
 from glue.discord_bot.helpers import verify_ownership_for_guild
 from dotenv import load_dotenv
 import os
+import time
+import asyncio
 
 load_dotenv()
 MODE = os.getenv('MODE')
@@ -41,8 +43,8 @@ class Bot(discord.Client):
 
     @tasks.loop(seconds=60*60)
     async def check_ownership(self):
-        for guild in db.get_guilds():
-            await verify_ownership_for_guild(guild, self)
+        result = await asyncio.gather(*[verify_ownership_for_guild(guild, self)
+                                        for guild in db.get_guilds()])
 
     async def on_ready(self):
         print(f"We have logged in as {self.user}.")
