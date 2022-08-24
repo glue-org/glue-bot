@@ -1,4 +1,5 @@
-from glue.database.database import GlueUser, Users, GlueGuild, Guilds
+from bson.objectid import ObjectId
+from glue.database.database import GlueUser, Users, GlueGuild, Guilds, Canister as GlueCanister
 from ic.client import Client
 from ic.identity import Identity
 from ic.agent import Agent
@@ -26,33 +27,38 @@ dip721_candid = open('dip721.did').read()
 ogy_candid = open('ogy.did').read()
 icp_ledger_candid = open('icp-ledger.did').read()
 ccc_candid = open('ccc.did').read()
+icrc_1_candid = open('icrc-1.did').read()
 
 
 async def verify_ownership_for_guild(guild: GlueGuild, bot: discord.Client):
     for canister in guild['canisters']:
         logger.info(f"verifying ownership for canister {canister['name']}")
         for user_id in canister['users']:
-            # get the user from the database
-            user_from_db = user_db.get_user(user_id)
-            if user_from_db:
-                # for all the attached principals, check if the user owns the NFT
-                has_token = False
-                for principal in user_from_db['principals']:
-                    # check if all returns in the for loop are true
-                    try:
-                        if await user_has_tokens(
-                                canister['tokenStandard'], principal, canister['canisterId']):
-                            has_token = True
-                            break
-                    except Exception:
-                        logger.exception(Exception)
-                if not has_token:
-                    # remove the role from the user
-                    await remove_role_from_user(
-                        user_from_db, guild, canister['role'], bot)
-                    # remove the user from the project
-                    guild_db.delete_user_from_canister(
-                        guild['guildId'], canister['canisterId'], user_id)
+            await verify_ownership_for_user(user_id, bot, canister, guild)
+
+async def verify_ownership_for_user(user_id: ObjectId, bot: discord.Client, canister : GlueCanister, guild: GlueGuild):
+    # get the user from the database
+    user_from_db = user_db.get_user(user_id)
+    try:
+        if user_from_db:
+            # for all the attached principals, check if the user owns the NFT
+            has_token = False
+            for principal in user_from_db['principals']:
+                # check if all returns in the for loop are true
+                    tokens = await user_has_tokens(
+                        canister['tokenStandard'], principal, canister['canisterId'])
+                    if tokens:
+                        has_token = True
+                        break
+            if not has_token:
+                # remove the role from the user
+                await remove_role_from_user(
+                    user_from_db, guild, canister['role'], bot)
+                # remove the user from the project
+                guild_db.delete_user_from_canister(
+                    guild['guildId'], canister['canisterId'], user_id)
+    except Exception:
+        logger.exception("error checking ownership")
 
 
 async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
@@ -103,6 +109,19 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
                           candid=ccc_candid)
 
         result = await ccc.balanceOf_async(principal)  # type: ignore
+        try:
+            if result[0] != 0:  # type: ignore
+                return True
+        except Exception:
+            return False
+    elif standard == 'icrc-1':
+        icrc_1 = Canister(agent=agent, canister_id=canister_id,
+                          candid=icrc_1_candid)
+
+        result = await icrc_1.icrc1_balance_of_async({ # type: ignore
+            'owner' : principal,
+            'subaccount' : []
+        })  
         try:
             if result[0] != 0:  # type: ignore
                 return True
