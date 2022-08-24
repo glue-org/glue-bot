@@ -8,11 +8,14 @@ from dotenv import load_dotenv
 import os
 import time
 import asyncio
+import logging
 
 load_dotenv()
 MODE = os.getenv('MODE')
 TEST_GUILD_ID = os.getenv('TEST_GUILD_ID')
 
+# create logger
+logger = logging.getLogger('discord')
 
 # initialize DB
 db = Guilds()
@@ -43,8 +46,10 @@ class Bot(discord.Client):
 
     @tasks.loop(seconds=60*60)
     async def check_ownership(self):
+        logger.info("Checking ownership")
         result = await asyncio.gather(*[verify_ownership_for_guild(guild, self)
                                         for guild in db.get_guilds()])
+        logger.info("Done checking ownership")
 
     async def on_ready(self):
         print(f"We have logged in as {self.user}.")
