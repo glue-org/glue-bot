@@ -48,10 +48,8 @@ async def verify_ownership_for_user(user_id: ObjectId, bot: discord.Client, cani
             has_token = False
             for principal in user_from_db['principals']:
                 # check if all returns in the for loop are true
-                    logger.info(f"start {canister['name']}")
                     tokens = await user_has_tokens(
                         canister['tokenStandard'], principal, canister['canisterId'])
-                    logger.info(f"end {canister['name']}")
                     if tokens:
                         has_token = True
                         break
