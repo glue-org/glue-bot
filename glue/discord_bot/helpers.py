@@ -1,4 +1,3 @@
-from ast import alias
 from bson.objectid import ObjectId
 from glue.database.database import GlueUser, Users, GlueGuild, Guilds, Canister as GlueCanister
 from ic.client import Client
@@ -10,7 +9,6 @@ from ic.candid import encode, Types
 import discord
 from discord.utils import get
 import logging
-import asyncio
 
 # create logger
 logger = logging.getLogger('discord')
@@ -37,7 +35,6 @@ async def verify_ownership_for_guild(guild: GlueGuild, bot: discord.Client):
         logger.info(f"verifying ownership for canister {canister['name']}")
         for user_id in canister['users']:
             await verify_ownership_for_user(user_id, bot, canister, guild)
-        # result = await asyncio.gather(*[verify_ownership_for_user(user_id, bot, canister, guild) for user_id in canister['users']]) 
 
 async def verify_ownership_for_user(user_id: ObjectId, bot: discord.Client, canister : GlueCanister, guild: GlueGuild):
     # get the user from the database
