@@ -14,6 +14,11 @@ ic-py = {git = "git@github.com:rocklabs-io/ic-py.git", rev = "fix/reserved_candi
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 autopep8 = "^1.6.0"
+yapf = "^0.32.0"
+black = {version = "^22.6.0", allow-prereleases = true}
+
+[tool.poetry.scripts]
+glue = 'glue.main:run'
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

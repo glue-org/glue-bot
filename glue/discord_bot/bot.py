@@ -11,11 +11,11 @@ import asyncio
 import logging
 
 load_dotenv()
-MODE = os.getenv('MODE')
-TEST_GUILD_ID = os.getenv('TEST_GUILD_ID')
+MODE = os.getenv("MODE")
+TEST_GUILD_ID = os.getenv("TEST_GUILD_ID")
 
 # create logger
-logger = logging.getLogger('discord')
+logger = logging.getLogger("discord")
 
 # initialize DB
 db = Guilds()
@@ -44,11 +44,12 @@ class Bot(discord.Client):
         # to add a cog do the following
         # self.add_cog()
 
-    @tasks.loop(seconds=60*60)
+    @tasks.loop(seconds=60 * 60)
     async def check_ownership(self):
         logger.info("Checking ownership")
-        result = await asyncio.gather(*[verify_ownership_for_guild(guild, self)
-                                        for guild in db.get_guilds()])
+        result = await asyncio.gather(
+            *[verify_ownership_for_guild(guild, self) for guild in db.get_guilds()]
+        )
         logger.info("Done checking ownership")
 
     async def on_ready(self):
@@ -62,17 +63,19 @@ class Bot(discord.Client):
         owner = guild.owner
         # send a message to the owner if it exists
         if owner:
-            await owner.send(embed=discord.Embed(title=f"Hey there, thanks for having me 🥳\n",
-                                                 description=f"If you want to setup an NFT project to grant holder roles to members, run the `/project add` command in any channel of the respective server.\n"
-                                                 f"After you setup your first project, you can run `/generate` to generate your unique verification URL 😊\n\n"
-                                                 f"🚨 **FAQ - READ FIRST** 🚨\n\n"
-                                                 f"1️⃣ when specifying a role to grant, make sure you simpy use the role's name, don't `@` it!\n"
-                                                 f"　　- 👼 good: `mySuperCrazyRole`\n"
-                                                 f"　　- 👻 bad: `@mySuperCrazyRole`\n"
-                                                 f"2️⃣ make sure the bots role (`glue.bot`) is always **above** the roles it should manage in your discord server's setting (see picture below)!"
-                                                 f"3️⃣ if your users can't verify themselves, this has likely two reasons:\n"
-                                                 f"　　- the user doesn't have cookies in his browser enabled\n"
-                                                 f"　　- the user opens the page in the discord browser, not the device browser if on mobile. Make sure they click on the bottom right browser icon to open the page in the device browser!\n\n"
-                                                 f"If you're still not sure how to setup glue, check this [guide](https://youtu.be/xWmVfiRyYns?t=250) 📚\n\n",
-                                                 ).set_image(url="https://imgur.com/vThlbIi.png")
-                             )
+            await owner.send(
+                embed=discord.Embed(
+                    title=f"Hey there, thanks for having me 🥳\n",
+                    description=f"If you want to setup an NFT project to grant holder roles to members, run the `/project add` command in any channel of the respective server.\n"
+                    f"After you setup your first project, you can run `/generate` to generate your unique verification URL 😊\n\n"
+                    f"🚨 **FAQ - READ FIRST** 🚨\n\n"
+                    f"1️⃣ when specifying a role to grant, make sure you simpy use the role's name, don't `@` it!\n"
+                    f"　　- 👼 good: `mySuperCrazyRole`\n"
+                    f"　　- 👻 bad: `@mySuperCrazyRole`\n"
+                    f"2️⃣ make sure the bots role (`glue.bot`) is always **above** the roles it should manage in your discord server's setting (see picture below)!"
+                    f"3️⃣ if your users can't verify themselves, this has likely two reasons:\n"
+                    f"　　- the user doesn't have cookies in his browser enabled\n"
+                    f"　　- the user opens the page in the discord browser, not the device browser if on mobile. Make sure they click on the bottom right browser icon to open the page in the device browser!\n\n"
+                    f"If you're still not sure how to setup glue, check this [guide](https://youtu.be/xWmVfiRyYns?t=250) 📚\n\n",
+                ).set_image(url="https://imgur.com/vThlbIi.png")
+            )
