@@ -6,13 +6,15 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-MONGO_USERNAME = os.getenv('MONGO_USERNAME')
-MONGO_PW = os.getenv('MONGO_PW')
+MONGO_USERNAME = os.getenv("MONGO_USERNAME")
+MONGO_PW = os.getenv("MONGO_PW")
+
+TokenStandard = Literal["ext", "dip721", "ogy", "icp-ledger", "ccc", "icrc-1", "dip20"]
 
 
 class Canister(TypedDict):
     canisterId: str
-    tokenStandard: Literal['ext', 'dip721', 'ogy', 'icp-ledger', 'ccc', 'icrc-1']
+    tokenStandard: TokenStandard
     role: str
     name: str
     users: list[ObjectId]
@@ -34,7 +36,8 @@ class Guilds:
             # connect to local mongoDB using username and password of admin user
             if MONGO_USERNAME is not None and MONGO_PW is not None:
                 self.client = MongoClient(
-                    f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/")
+                    f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/"
+                )
             else:
                 self.client = MongoClient()
         except Exception as e:
@@ -43,11 +46,20 @@ class Guilds:
         self.db = self.client.glue_discord
         self.collection = self.db.guilds
 
-    def create_guild(self, guild_id: str, canister_id: str, token_standard: Literal['ext', 'dip721', 'ogy', 'icp-ledger', 'ccc', 'icrc-1'], role: str, name: str):
+    def create_guild(
+        self,
+        guild_id: str,
+        canister_id: str,
+        token_standard: TokenStandard,
+        role: str,
+        name: str,
+    ):
         # if the document already exists, update it
         if self.collection.find_one({"guildId": guild_id}):
             # make sure the canisters are unique
-            if not self.collection.find_one({"guildId": guild_id, "canisters.canisterId": canister_id}):
+            if not self.collection.find_one(
+                {"guildId": guild_id, "canisters.canisterId": canister_id}
+            ):
                 # if they are not, update the canister
                 self.collection.update_one(
                     {"guildId": guild_id},
@@ -55,16 +67,16 @@ class Guilds:
                         "$push":
                         # we have to use the first element of the list, otherwise we have nested lists
                         {
-                            "canisters":
-                                {
-                                    "canisterId": canister_id,
-                                    "tokenStandard": token_standard,
-                                    "role": role,
-                                    "name": name,
-                                    "users": []
-                                }
+                            "canisters": {
+                                "canisterId": canister_id,
+                                "tokenStandard": token_standard,
+                                "role": role,
+                                "name": name,
+                                "users": [],
+                            }
                         }
-                    })
+                    },
+                )
             else:
                 raise Exception("Canister already exists")
         else:
@@ -77,9 +89,9 @@ class Guilds:
                             "tokenStandard": token_standard,
                             "role": role,
                             "name": name,
-                            "users": []
+                            "users": [],
                         }
-                    ]
+                    ],
                 }
             )
 
@@ -89,28 +101,25 @@ class Guilds:
     def get_guild_by_id(self, guild_id: str):
         return self.collection.find_one({"guildId": guild_id})
 
-    def delete_user_from_canister(self, guild_id: str, canister_id: str, user_id: ObjectId):
+    def delete_user_from_canister(
+        self, guild_id: str, canister_id: str, user_id: ObjectId
+    ):
         self.collection.find_one_and_update(
             {"guildId": guild_id, "canisters.canisterId": canister_id},
-            {"$pull": {"canisters.$.users": user_id}}
+            {"$pull": {"canisters.$.users": user_id}},
         )
 
     def delete_canister(self, guild_id: str, canister_id: str):
         # if the document already exists, update it
-        if not self.collection.find_one({"guildId": guild_id, "canisters.canisterId": canister_id}):
+        if not self.collection.find_one(
+            {"guildId": guild_id, "canisters.canisterId": canister_id}
+        ):
             raise Exception("Canister does not exist")
         else:
             self.collection.update_one(
                 {"guildId": guild_id},
-                {
-                    "$pull":
-                        {
-                            "canisters":
-                                {
-                                    "canisterId": canister_id
-                                }
-                        }
-                })
+                {"$pull": {"canisters": {"canisterId": canister_id}}},
+            )
 
 
 class Users:
@@ -119,7 +128,8 @@ class Users:
             # connect to local mongoDB using username and password of admin user
             if MONGO_USERNAME is not None and MONGO_PW is not None:
                 self.client = MongoClient(
-                    f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/")
+                    f"mongodb://{urllib.parse.quote_plus(MONGO_USERNAME)}:{urllib.parse.quote_plus(MONGO_PW)}@127.0.0.1:27017/"
+                )
             else:
                 self.client = MongoClient()
         except Exception as e:
