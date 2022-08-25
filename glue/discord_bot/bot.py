@@ -6,11 +6,11 @@ from glue.database.database import Guilds
 from glue.discord_bot.helpers import verify_ownership_for_guild
 from dotenv import load_dotenv
 import os
-import time
 import asyncio
 import logging
+from pathlib import Path
 
-load_dotenv(override=True)
+load_dotenv(Path.cwd() / ".env", override=True)
 MODE = os.getenv("MODE")
 TEST_GUILD_ID = os.getenv("TEST_GUILD_ID")
 

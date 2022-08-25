@@ -32,6 +32,7 @@
 ## deploying to production
 
 -   you can run the bot within a [`screen`](https://linuxize.com/post/how-to-use-linux-screen/) session on your server
+-   to install it, run `pip install --force-reinstall git+ssh://git@github.com/glue-org/glue-bot`. after that run `glue` to start the bot. make sure the `.env` file is present in the current working directory.
 
 # requirement analysis
 

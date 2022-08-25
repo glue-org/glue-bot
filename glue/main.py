@@ -1,5 +1,5 @@
 import logging
-from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv
 from glue.discord_bot.bot import Bot
 import os
 import discord
@@ -18,7 +18,9 @@ logger.addHandler(handler)
 
 
 # add variable from .env file
-load_dotenv(find_dotenv(),override=True)
+path_to_env = Path.cwd() / ".env"
+print(f'loading .env file from "{path_to_env}"')
+load_dotenv(path_to_env, override=True)
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
@@ -50,7 +52,6 @@ async def generate(interaction: discord.Interaction):
 
 
 def run():
-    path_to_env = Path.cwd() / ".env"
     if not path_to_env.exists():
         raise Exception(
             f'.env file at path "{path_to_env}" does not exist. Make sure you create it first. Check the README for more information.'

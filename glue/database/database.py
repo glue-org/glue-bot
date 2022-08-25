@@ -4,8 +4,9 @@ from typing import Optional, TypedDict, Literal
 import urllib.parse
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv(override=True)
+load_dotenv(Path.cwd() / ".env", override=True)
 MONGO_USERNAME = os.getenv("MONGO_USERNAME")
 MONGO_PW = os.getenv("MONGO_PW")
 
