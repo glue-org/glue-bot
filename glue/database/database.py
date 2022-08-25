@@ -5,7 +5,7 @@ import urllib.parse
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 MONGO_USERNAME = os.getenv("MONGO_USERNAME")
 MONGO_PW = os.getenv("MONGO_PW")
 

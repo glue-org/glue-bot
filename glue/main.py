@@ -20,7 +20,7 @@ logger.addHandler(handler)
 
 
 # add variable from .env file
-load_dotenv()
+load_dotenv(override=True)
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 

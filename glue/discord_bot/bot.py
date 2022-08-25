@@ -10,7 +10,7 @@ import time
 import asyncio
 import logging
 
-load_dotenv()
+load_dotenv(override=True)
 MODE = os.getenv("MODE")
 TEST_GUILD_ID = os.getenv("TEST_GUILD_ID")
 
