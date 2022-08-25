@@ -1,5 +1,5 @@
 from bson.objectid import ObjectId
-from glue.database.database import GlueUser, Users, GlueGuild, Guilds, Canister as GlueCanister
+from glue.database.database import GlueUser, Users, GlueGuild, Guilds, Canister as GlueCanister, TokenStandard
 from ic.client import Client
 from ic.identity import Identity
 from ic.agent import Agent
@@ -28,6 +28,7 @@ ogy_candid = open('ogy.did').read()
 icp_ledger_candid = open('icp-ledger.did').read()
 ccc_candid = open('ccc.did').read()
 icrc_1_candid = open('icrc-1.did').read()
+dip20_candid = open('dip20.did').read()
 
 
 async def verify_ownership_for_guild(guild: GlueGuild, bot: discord.Client):
@@ -36,7 +37,8 @@ async def verify_ownership_for_guild(guild: GlueGuild, bot: discord.Client):
         for user_id in canister['users']:
             await verify_ownership_for_user(user_id, bot, canister, guild)
 
-async def verify_ownership_for_user(user_id: ObjectId, bot: discord.Client, canister : GlueCanister, guild: GlueGuild):
+
+async def verify_ownership_for_user(user_id: ObjectId, bot: discord.Client, canister: GlueCanister, guild: GlueGuild):
     # get the user from the database
     user_from_db = user_db.get_user(user_id)
     try:
@@ -45,11 +47,11 @@ async def verify_ownership_for_user(user_id: ObjectId, bot: discord.Client, cani
             has_token = False
             for principal in user_from_db['principals']:
                 # check if all returns in the for loop are true
-                    tokens = await user_has_tokens(
-                        canister['tokenStandard'], principal, canister['canisterId'])
-                    if tokens:
-                        has_token = True
-                        break
+                tokens = await user_has_tokens(
+                    canister['tokenStandard'], principal, canister['canisterId'])
+                if tokens:
+                    has_token = True
+                    break
             if not has_token:
                 # remove the role from the user
                 await remove_role_from_user(
@@ -61,7 +63,7 @@ async def verify_ownership_for_user(user_id: ObjectId, bot: discord.Client, cani
         logger.exception("error checking ownership")
 
 
-async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bool:
+async def user_has_tokens(standard: TokenStandard, principal: str, canister_id: str) -> bool:
     if standard == 'ext':
         ext = Canister(agent=agent, canister_id=canister_id,
                        candid=ext_candid)
@@ -75,7 +77,7 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
     elif standard == 'dip721':
         dip721 = Canister(agent=agent, canister_id=canister_id,
                           candid=dip721_candid)
-        result = await dip721.ownerTokenIdentifiers_async(principal)  # type: ignore
+        result = await dip721.ownerTokenIdentifiers_async(principal) # type: ignore
         try:
             if len(result[0]['Ok']) != 0:  # type: ignore
                 return True
@@ -96,9 +98,9 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
     elif standard == 'icp-ledger':
         account = Principal.from_str(principal).to_account_id().bytes
         icp_ledger = Canister(agent=agent, canister_id=canister_id,
-                          candid=icp_ledger_candid)
+                              candid=icp_ledger_candid)
 
-        result = await icp_ledger.account_balance_async({'account' : account})  # type: ignore
+        result = await icp_ledger.account_balance_async({'account': account}) # type: ignore
         try:
             if result[0]['e8s'] != 0:  # type: ignore
                 return True
@@ -106,7 +108,7 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
             return False
     elif standard == 'ccc':
         ccc = Canister(agent=agent, canister_id=canister_id,
-                          candid=ccc_candid)
+                       candid=ccc_candid)
 
         result = await ccc.balanceOf_async(principal)  # type: ignore
         try:
@@ -118,10 +120,22 @@ async def user_has_tokens(standard: str, principal: str, canister_id: str) -> bo
         icrc_1 = Canister(agent=agent, canister_id=canister_id,
                           candid=icrc_1_candid)
 
-        result = await icrc_1.icrc1_balance_of_async({ # type: ignore
-            'owner' : principal,
-            'subaccount' : []
-        })  
+        result = await icrc_1.icrc1_balance_of_async({  # type: ignore
+            'owner': principal,
+            'subaccount': []
+        })
+        try:
+            if result[0] != 0:  # type: ignore
+                return True
+        except Exception:
+            return False
+    elif standard == 'dip20':
+        dip20 = Canister(agent=agent, canister_id=canister_id,
+                         candid=dip20_candid)
+
+        result = await dip20.balanceOf_async(  # type: ignore
+            principal
+        )
         try:
             if result[0] != 0:  # type: ignore
                 return True
