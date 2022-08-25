@@ -1,12 +1,10 @@
-import argparse
 import logging
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from glue.discord_bot.bot import Bot
 import os
 import discord
 from discord import app_commands
 from glue.discord_bot.groups.project import Project
-import argparse
 from pathlib import Path
 
 # add logging
@@ -20,7 +18,7 @@ logger.addHandler(handler)
 
 
 # add variable from .env file
-load_dotenv(override=True)
+load_dotenv(find_dotenv(),override=True)
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
