@@ -6,7 +6,7 @@
 
 -   [`poetry`](https://python-poetry.org/)
 -   `python ^3.10` (you can use [pyenv](https://github.com/pyenv/pyenv#installation) to manage multiple versions of python)
--   `.env` file in `/glue` with the following entries:
+-   `.env` file in the root of this repository with the following entries:
 
     -   DISCORD_TOKEN
         -   your discord bots token
@@ -27,7 +27,8 @@
 ## local deployment
 
 -   run `poetry install` to install all dependencies
--   run `poetry run python glue/main.py` from the _root of this repository_ to start the bot
+-   run `poetry shell` to start the virtual environment
+-   run `glue` from the _root of this repository_ (where your `.env` file is located) to start the bot
 
 ## deploying to production
 
