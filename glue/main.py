@@ -6,6 +6,8 @@ import discord
 from discord import app_commands
 from glue.discord_bot.groups.project import Project
 from pathlib import Path
+from typing import Literal, Optional
+import base64
 
 # add logging
 logger = logging.getLogger("discord")
@@ -36,13 +38,48 @@ bot.tree.add_command(Project(bot))
 @bot.tree.command()
 @app_commands.guild_only()
 @app_commands.default_permissions()
-async def generate(interaction: discord.Interaction):
+@app_commands.describe(
+    logo="Please upload a logo for your project. We recommend svg or png files.",
+    theme="Please specify a theme for your project.",
+)
+async def generate(
+    interaction: discord.Interaction,
+    logo: Optional[discord.Attachment],
+    theme: Optional[
+        Literal[
+            "light",
+            "dark",
+            "bumblebee",
+            "emerald",
+            "corporate",
+            "synthwave",
+            "retro",
+            "cyberpunk",
+            "valentine",
+            "halloween",
+            "garden",
+            "forest",
+            "aqua",
+            "lofi",
+            "wireframe",
+            "black",
+            "luxury",
+            "dracula",
+            "cmyk",
+            "autumn",
+            "business",
+            "acid",
+            "night",
+            "winter",
+        ]
+    ],
+):
     """Generates the URL for members to verify with."""
     try:
         await interaction.response.send_message(
             f"❗️The following URL is only valid for the discord server this command was run from!❗️\n"
             f"As a best practice you should create a new channel that contains nothing but this link. Make sure no one but you or people you can trust have the ability to manage that channel!\n\n"
-            f"{FRONTEND_URL}/?guild={interaction.guild_id}",
+            f"{FRONTEND_URL}/?guild={interaction.guild_id}{f'&logo={base64.b64encode(logo.url.encode()).decode()}' if logo else ''}{f'&theme={theme}' if theme else ''}",
             ephemeral=True,
         )
     except Exception as e:
