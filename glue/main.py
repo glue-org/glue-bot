@@ -25,9 +25,7 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 
-intents = discord.Intents.default()
-intents.members = True
-intents.message_content = True
+intents = discord.Intents(guilds=True, members=True)
 bot = Bot(intents=intents)
 
 # adding project command group

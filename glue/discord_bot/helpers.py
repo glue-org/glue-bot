@@ -163,6 +163,7 @@ async def remove_role_from_user(
         )
         # get role by name
         role_snowflake = get(discord_guild.roles, name=role)
+        #  this needs the members intent to be on
         discord_user = discord_guild.get_member(int(user["discordId"]))
         if discord_user and role_snowflake:
             try:
