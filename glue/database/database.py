@@ -1,5 +1,6 @@
 from bson.objectid import ObjectId
 from pymongo.mongo_client import MongoClient
+from pymongo.collection import Collection
 from typing import Optional, TypedDict, Literal
 import urllib.parse
 import os
@@ -19,6 +20,8 @@ class Canister(TypedDict):
     role: str
     name: str
     users: list[ObjectId]
+    min: Optional[int]
+    max: Optional[int]
 
 
 class GlueGuild(TypedDict):
@@ -45,8 +48,8 @@ class Database:
             print("database connection error")
             raise e
         self.db = self.client.glue_discord
-        self.guilds = self.db.guilds
-        self.users = self.db.users
+        self.guilds: Collection[GlueGuild] = self.db.guilds
+        self.users: Collection[GlueUser] = self.db.users
 
     def create_guild(
         self,
@@ -55,12 +58,18 @@ class Database:
         token_standard: TokenStandard,
         role: str,
         name: str,
+        min: Optional[int],
+        max: Optional[int],
     ):
         # if the document already exists, update it
         if self.guilds.find_one({"guildId": guild_id}):
             # make sure the canisters are unique
             if not self.guilds.find_one(
-                {"guildId": guild_id, "canisters.canisterId": canister_id}
+                {
+                    "guildId": guild_id,
+                    "canisters.canisterId": canister_id,
+                    "canisters.name": name,
+                }
             ):
                 # if they are not, update the canister
                 self.guilds.update_one(
@@ -75,12 +84,16 @@ class Database:
                                 "role": role,
                                 "name": name,
                                 "users": [],
+                                "min": min,
+                                "max": max,
                             }
                         }
                     },
                 )
             else:
-                raise Exception("Canister already exists")
+                raise Exception(
+                    "A role with the same name for the same canister already exists"
+                )
         else:
             self.guilds.insert_one(
                 {
@@ -92,6 +105,8 @@ class Database:
                             "role": role,
                             "name": name,
                             "users": [],
+                            "min": min,
+                            "max": max,
                         }
                     ],
                 }
@@ -111,16 +126,20 @@ class Database:
             {"$pull": {"canisters.$.users": user_id}},
         )
 
-    def delete_canister(self, guild_id: str, canister_id: str):
+    def delete_canister(self, guild_id: str, canister_id: str, name: str):
         # if the document already exists, update it
         if not self.guilds.find_one(
-            {"guildId": guild_id, "canisters.canisterId": canister_id}
+            {
+                "guildId": guild_id,
+                "canisters.canisterId": canister_id,
+                "canisters.name": name,
+            }
         ):
             raise Exception("Canister does not exist")
         else:
             self.guilds.update_one(
                 {"guildId": guild_id},
-                {"$pull": {"canisters": {"canisterId": canister_id}}},
+                {"$pull": {"canisters": {"canisterId": canister_id, "name": name}}},
             )
 
     def get_user(self, user_id: ObjectId) -> Optional[GlueUser]:

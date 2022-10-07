@@ -16,6 +16,7 @@ pytest = "^5.2"
 autopep8 = "^1.6.0"
 yapf = "^0.32.0"
 black = {version = "^22.6.0", allow-prereleases = true}
+mypy = "^0.982"
 
 [tool.poetry.scripts]
 glue = 'glue.main:run'

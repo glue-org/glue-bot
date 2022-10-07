@@ -21,7 +21,7 @@ class Project(app_commands.Group):
 
     @app_commands.command()
     @app_commands.describe(
-        name="Please provide a name for your project. This will only be used internally",
+        name="Please provide a name for your entry. This will only be used internally",
         canister_id="Please specify the projects canister ID, e.g. `pk6rk-6aaaa-aaaae-qaazq-cai`",
         standard="Please pick the standard the canister is implementing.",
         role="Please specify the name of the role that users will receive when they are holders.",
@@ -35,9 +35,18 @@ class Project(app_commands.Group):
         canister_id: str,
         standard: TokenStandard,
         role: str,
+        min: Optional[app_commands.Range[int, 1, None]] = None,
+        max: Optional[app_commands.Range[int, 1, None]] = None,
     ):
         """Set up an NFT project"""
         try:
+
+            if min is not None and max is None:
+                raise ValueError("please provide both min and max")
+
+            if (min or 1) > (max or 1):
+                raise ValueError("min must be smaller than max")
+
             # check if the canister id provided is valid
             Principal.from_str(canister_id)
 
@@ -48,6 +57,8 @@ class Project(app_commands.Group):
                     token_standard=standard,
                     role=role,
                     name=name,
+                    min=min,
+                    max=max,
                 )
                 await interaction.guild.create_role(name=role)
                 await interaction.response.send_message(
@@ -79,17 +90,19 @@ class Project(app_commands.Group):
     @app_commands.guild_only()
     @app_commands.default_permissions()
     @app_commands.describe(
-        canister_id="Please specify the canister ID of the project you want to delete, e.g. `pk6rk-6aaaa-aaaae-qaazq-cai`",
+        canister_id="Please specify the name and canister ID of the entry you want to delete, e.g. `foobar`",
     )
-    async def remove(self, interaction: discord.Interaction, canister_id: str):
+    async def remove(
+        self, interaction: discord.Interaction, canister_id: str, name: str
+    ):
         """Remove a project"""
         try:
-            db.delete_canister(str(interaction.guild_id), canister_id)
+            db.delete_canister(str(interaction.guild_id), canister_id, name)
             await interaction.response.send_message(
                 ephemeral=True,
                 embed=discord.Embed(
                     title="Removed project",
-                    description=f"Removed project __{canister_id}__ from database.",
+                    description=f"Removed __{name}__ with canister ID __{canister_id}__ from database.",
                 ),
             )
         except Exception as e:
