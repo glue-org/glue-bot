@@ -1,9 +1,8 @@
 from bson.objectid import ObjectId
 from glue.database.database import (
     GlueUser,
-    Users,
+    Database,
     GlueGuild,
-    Guilds,
     Canister as GlueCanister,
     TokenStandard,
 )
@@ -26,8 +25,7 @@ client = Client()
 agent = Agent(iden, client)
 
 # create DB
-user_db = Users()
-guild_db = Guilds()
+db = Database()
 
 ext_candid = open(Path(__file__).parent / ".." / "dids" / "ext.did").read()
 dip721_candid = open(Path(__file__).parent / ".." / "dids" / "dip721.did").read()
@@ -51,7 +49,7 @@ async def verify_ownership_for_user(
     user_id: ObjectId, bot: discord.Client, canister: GlueCanister, guild: GlueGuild
 ):
     # get the user from the database
-    user_from_db = user_db.get_user(user_id)
+    user_from_db = db.get_user(user_id)
     try:
         if user_from_db:
             # for all the attached principals, check if the user owns the NFT
@@ -68,7 +66,7 @@ async def verify_ownership_for_user(
                 # remove the role from the user
                 await remove_role_from_user(user_from_db, guild, canister["role"], bot)
                 # remove the user from the project
-                guild_db.delete_user_from_canister(
+                db.delete_user_from_canister(
                     guild["guildId"], canister["canisterId"], user_id
                 )
     except Exception:
