@@ -41,7 +41,7 @@ class Project(app_commands.Group):
         """Set up an NFT project"""
         try:
 
-            if min is not None and max is None:
+            if min is not None and max is None or min is None and max is not None:
                 raise ValueError("please provide both min and max")
 
             if (min or 1) > (max or 1):

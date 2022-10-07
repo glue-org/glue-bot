@@ -15,6 +15,7 @@ import discord
 from discord.utils import get
 import logging
 from pathlib import Path
+from typing import Optional
 
 # create logger
 logger = logging.getLogger("discord")
@@ -57,7 +58,13 @@ async def verify_ownership_for_user(
             for principal in user_from_db["principals"]:
                 # check if all returns in the for loop are true
                 tokens = await user_has_tokens(
-                    canister["tokenStandard"], principal, canister["canisterId"]
+                    canister["tokenStandard"],
+                    principal,
+                    canister["canisterId"],
+                    canister.get(
+                        "min"
+                    ),  # this will return None if the key doesn't exist
+                    canister.get("max"),
                 )
                 if tokens:
                     has_token = True
@@ -74,23 +81,35 @@ async def verify_ownership_for_user(
 
 
 async def user_has_tokens(
-    standard: TokenStandard, principal: str, canister_id: str
+    standard: TokenStandard,
+    principal: str,
+    canister_id: str,
+    min: Optional[int],
+    max: Optional[int],
 ) -> bool:
     if standard == "ext":
         ext = Canister(agent=agent, canister_id=canister_id, candid=ext_candid)
         account = Principal.from_str(principal).to_account_id().to_str()[2:]
         result = await ext.tokens_async(account)  # type: ignore
         try:
-            if len(result[0]["ok"]) != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= len(result[0]["ok"]) <= max:
+                    return True
+            else:
+                if len(result[0]["ok"]) != 0:
+                    return True
         except Exception:
             return False
     elif standard == "dip721":
         dip721 = Canister(agent=agent, canister_id=canister_id, candid=dip721_candid)
         result = await dip721.ownerTokenIdentifiers_async(principal)  # type: ignore
         try:
-            if len(result[0]["Ok"]) != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= len(result[0]["Ok"]) <= max:
+                    return True
+            else:
+                if len(result[0]["Ok"]) != 0:
+                    return True
         except Exception:
             return False
     elif standard == "ogy":
@@ -102,8 +121,12 @@ async def user_has_tokens(
         )
 
         try:
-            if len(result[0]["ok"]["nfts"]) != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= len(result[0]["ok"]["nfts"]) <= max:
+                    return True
+            else:
+                if len(result[0]["ok"]["nfts"]) != 0:
+                    return True
         except Exception:
             return False
     elif standard == "icp-ledger":
@@ -114,8 +137,12 @@ async def user_has_tokens(
 
         result = await icp_ledger.account_balance_async({"account": account})  # type: ignore
         try:
-            if result[0]["e8s"] != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= result[0]["e8s"] <= max:
+                    return True
+            else:
+                if result[0]["e8s"] != 0:
+                    return True
         except Exception:
             return False
     elif standard == "ccc":
@@ -123,8 +150,12 @@ async def user_has_tokens(
 
         result = await ccc.balanceOf_async(principal)  # type: ignore
         try:
-            if result[0] != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= result[0] <= max:
+                    return True
+            else:
+                if result[0] != 0:
+                    return True
         except Exception:
             return False
     elif standard == "icrc-1":
@@ -134,8 +165,12 @@ async def user_has_tokens(
             {"owner": principal, "subaccount": []}
         )
         try:
-            if result[0] != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= result[0] <= max:
+                    return True
+            else:
+                if result[0] != 0:
+                    return True
         except Exception:
             return False
     elif standard == "dip20":
@@ -143,8 +178,12 @@ async def user_has_tokens(
 
         result = await dip20.balanceOf_async(principal)  # type: ignore
         try:
-            if result[0] != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= result[0] <= max:
+                    return True
+            else:
+                if result[0] != 0:
+                    return True
         except Exception:
             return False
     return False
