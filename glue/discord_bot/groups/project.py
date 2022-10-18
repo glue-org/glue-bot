@@ -41,11 +41,9 @@ class Project(app_commands.Group):
         """Set up an NFT project"""
         try:
 
-            if min is not None and max is None or min is None and max is not None:
-                raise ValueError("please provide both min and max")
-
-            if (min or 1) > (max or 1):
-                raise ValueError("min must be smaller than max")
+            if min is not None and max is not None:
+                if min > max:
+                    raise ValueError("min must be smaller than max")
 
             # check if the canister id provided is valid
             Principal.from_str(canister_id)

@@ -95,6 +95,12 @@ async def user_has_tokens(
             if min and max:
                 if min <= len(result[0]["ok"]) <= max:
                     return True
+            elif min:
+                if min <= len(result[0]["ok"]):
+                    return True
+            elif max:
+                if len(result[0]["ok"]) <= max:
+                    return True
             else:
                 if len(result[0]["ok"]) != 0:
                     return True
@@ -106,6 +112,12 @@ async def user_has_tokens(
         try:
             if min and max:
                 if min <= len(result[0]["Ok"]) <= max:
+                    return True
+            elif min:
+                if min <= len(result[0]["Ok"]):
+                    return True
+            elif max:
+                if len(result[0]["Ok"]) <= max:
                     return True
             else:
                 if len(result[0]["Ok"]) != 0:
@@ -124,6 +136,12 @@ async def user_has_tokens(
             if min and max:
                 if min <= len(result[0]["ok"]["nfts"]) <= max:
                     return True
+            elif min:
+                if min <= len(result[0]["ok"]["nfts"]):
+                    return True
+            elif max:
+                if len(result[0]["ok"]["nfts"]) <= max:
+                    return True
             else:
                 if len(result[0]["ok"]["nfts"]) != 0:
                     return True
@@ -140,6 +158,12 @@ async def user_has_tokens(
             if min and max:
                 if min <= result[0]["e8s"] <= max:
                     return True
+            elif min:
+                if min <= result[0]["e8s"]:
+                    return True
+            elif max:
+                if result[0]["e8s"] <= max:
+                    return True
             else:
                 if result[0]["e8s"] != 0:
                     return True
@@ -152,6 +176,12 @@ async def user_has_tokens(
         try:
             if min and max:
                 if min <= result[0] <= max:
+                    return True
+            elif min:
+                if min <= result[0]:
+                    return True
+            elif max:
+                if result[0] <= max:
                     return True
             else:
                 if result[0] != 0:
@@ -168,6 +198,12 @@ async def user_has_tokens(
             if min and max:
                 if min <= result[0] <= max:
                     return True
+            elif min:
+                if min <= result[0]:
+                    return True
+            elif max:
+                if result[0] <= max:
+                    return True
             else:
                 if result[0] != 0:
                     return True
@@ -180,6 +216,12 @@ async def user_has_tokens(
         try:
             if min and max:
                 if min <= result[0] <= max:
+                    return True
+            elif min:
+                if min <= result[0]:
+                    return True
+            elif max:
+                if result[0] <= max:
                     return True
             else:
                 if result[0] != 0:
