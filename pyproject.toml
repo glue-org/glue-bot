@@ -9,7 +9,7 @@ python = "^3.10"
 python-dotenv = "^0.20.0"
 "discord.py" = {git = "git@github.com:Rapptz/discord.py.git"}
 pymongo = "^4.1.1"
-ic-py = {git = "git@github.com:rocklabs-io/ic-py.git", rev = "fix/reserved_candid"}
+ic-py = {git = "git@github.com:rocklabs-io/ic-py.git", branch="main"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

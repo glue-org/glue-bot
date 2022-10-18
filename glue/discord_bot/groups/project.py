@@ -76,10 +76,12 @@ class Project(app_commands.Group):
         else:
             messages = []
             for project in guild["canisters"]:
+                min = project.get("min")
+                max = project.get("max")
                 messages.append(
                     discord.Embed(
                         title=f'{project["name"]}',
-                        description=f'📇 **name:** {project["name"]}\n🪪 **canister id:** {project["canisterId"]}\n🕵🏿‍♂️ **role:** {project["role"]}\n💾 **standard:** {project["tokenStandard"]}\n\n',
+                        description=f'📇 **name:** {project["name"]}\n🪪 **canister id:** {project["canisterId"]}\n🕵🏿‍♂️ **role:** {project["role"]}\n💾 **standard:** {project["tokenStandard"]}\n⬇️ **min:** { f"{min}" if project.get("min") else "1"}\n⬆️ **max:** { f"{max}" if project.get("max") else "unbound"}\n\n',
                     )
                 )
             await interaction.response.send_message(embeds=messages, ephemeral=True)

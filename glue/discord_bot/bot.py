@@ -47,6 +47,7 @@ class Bot(discord.Client):
     @tasks.loop(seconds=60 * 60)
     async def check_ownership(self):
         logger.info("Checking ownership")
+        # we verify ownership for all guilds at the same time
         result = await asyncio.gather(
             *[verify_ownership_for_guild(guild, self) for guild in db.get_guilds()]
         )
