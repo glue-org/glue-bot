@@ -9,13 +9,14 @@ python = "^3.10"
 python-dotenv = "^0.20.0"
 "discord.py" = {git = "git@github.com:Rapptz/discord.py.git"}
 pymongo = "^4.1.1"
-ic-py = {git = "git@github.com:rocklabs-io/ic-py.git", rev = "fix/reserved_candid"}
+ic-py = {git = "git@github.com:rocklabs-io/ic-py.git", branch="main"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 autopep8 = "^1.6.0"
 yapf = "^0.32.0"
 black = {version = "^22.6.0", allow-prereleases = true}
+mypy = "^0.982"
 
 [tool.poetry.scripts]
 glue = 'glue.main:run'

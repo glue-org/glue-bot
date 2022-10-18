@@ -1,9 +1,8 @@
 from bson.objectid import ObjectId
 from glue.database.database import (
     GlueUser,
-    Users,
+    Database,
     GlueGuild,
-    Guilds,
     Canister as GlueCanister,
     TokenStandard,
 )
@@ -16,6 +15,7 @@ import discord
 from discord.utils import get
 import logging
 from pathlib import Path
+from typing import Optional
 
 # create logger
 logger = logging.getLogger("discord")
@@ -26,8 +26,7 @@ client = Client()
 agent = Agent(iden, client)
 
 # create DB
-user_db = Users()
-guild_db = Guilds()
+db = Database()
 
 ext_candid = open(Path(__file__).parent / ".." / "dids" / "ext.did").read()
 dip721_candid = open(Path(__file__).parent / ".." / "dids" / "dip721.did").read()
@@ -51,7 +50,7 @@ async def verify_ownership_for_user(
     user_id: ObjectId, bot: discord.Client, canister: GlueCanister, guild: GlueGuild
 ):
     # get the user from the database
-    user_from_db = user_db.get_user(user_id)
+    user_from_db = db.get_user(user_id)
     try:
         if user_from_db:
             # for all the attached principals, check if the user owns the NFT
@@ -59,7 +58,13 @@ async def verify_ownership_for_user(
             for principal in user_from_db["principals"]:
                 # check if all returns in the for loop are true
                 tokens = await user_has_tokens(
-                    canister["tokenStandard"], principal, canister["canisterId"]
+                    canister["tokenStandard"],
+                    principal,
+                    canister["canisterId"],
+                    canister.get(
+                        "min"
+                    ),  # this will return None if the key doesn't exist
+                    canister.get("max"),
                 )
                 if tokens:
                     has_token = True
@@ -68,7 +73,7 @@ async def verify_ownership_for_user(
                 # remove the role from the user
                 await remove_role_from_user(user_from_db, guild, canister["role"], bot)
                 # remove the user from the project
-                guild_db.delete_user_from_canister(
+                db.delete_user_from_canister(
                     guild["guildId"], canister["canisterId"], user_id
                 )
     except Exception:
@@ -76,23 +81,47 @@ async def verify_ownership_for_user(
 
 
 async def user_has_tokens(
-    standard: TokenStandard, principal: str, canister_id: str
+    standard: TokenStandard,
+    principal: str,
+    canister_id: str,
+    min: Optional[int],
+    max: Optional[int],
 ) -> bool:
     if standard == "ext":
         ext = Canister(agent=agent, canister_id=canister_id, candid=ext_candid)
         account = Principal.from_str(principal).to_account_id().to_str()[2:]
         result = await ext.tokens_async(account)  # type: ignore
         try:
-            if len(result[0]["ok"]) != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= len(result[0]["ok"]) <= max:
+                    return True
+            elif min:
+                if min <= len(result[0]["ok"]):
+                    return True
+            elif max:
+                if len(result[0]["ok"]) <= max:
+                    return True
+            else:
+                if len(result[0]["ok"]) != 0:
+                    return True
         except Exception:
             return False
     elif standard == "dip721":
         dip721 = Canister(agent=agent, canister_id=canister_id, candid=dip721_candid)
         result = await dip721.ownerTokenIdentifiers_async(principal)  # type: ignore
         try:
-            if len(result[0]["Ok"]) != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= len(result[0]["Ok"]) <= max:
+                    return True
+            elif min:
+                if min <= len(result[0]["Ok"]):
+                    return True
+            elif max:
+                if len(result[0]["Ok"]) <= max:
+                    return True
+            else:
+                if len(result[0]["Ok"]) != 0:
+                    return True
         except Exception:
             return False
     elif standard == "ogy":
@@ -104,8 +133,18 @@ async def user_has_tokens(
         )
 
         try:
-            if len(result[0]["ok"]["nfts"]) != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= len(result[0]["ok"]["nfts"]) <= max:
+                    return True
+            elif min:
+                if min <= len(result[0]["ok"]["nfts"]):
+                    return True
+            elif max:
+                if len(result[0]["ok"]["nfts"]) <= max:
+                    return True
+            else:
+                if len(result[0]["ok"]["nfts"]) != 0:
+                    return True
         except Exception:
             return False
     elif standard == "icp-ledger":
@@ -116,8 +155,18 @@ async def user_has_tokens(
 
         result = await icp_ledger.account_balance_async({"account": account})  # type: ignore
         try:
-            if result[0]["e8s"] != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= result[0]["e8s"] <= max:
+                    return True
+            elif min:
+                if min <= result[0]["e8s"]:
+                    return True
+            elif max:
+                if result[0]["e8s"] <= max:
+                    return True
+            else:
+                if result[0]["e8s"] != 0:
+                    return True
         except Exception:
             return False
     elif standard == "ccc":
@@ -125,8 +174,18 @@ async def user_has_tokens(
 
         result = await ccc.balanceOf_async(principal)  # type: ignore
         try:
-            if result[0] != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= result[0] <= max:
+                    return True
+            elif min:
+                if min <= result[0]:
+                    return True
+            elif max:
+                if result[0] <= max:
+                    return True
+            else:
+                if result[0] != 0:
+                    return True
         except Exception:
             return False
     elif standard == "icrc-1":
@@ -136,8 +195,18 @@ async def user_has_tokens(
             {"owner": principal, "subaccount": []}
         )
         try:
-            if result[0] != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= result[0] <= max:
+                    return True
+            elif min:
+                if min <= result[0]:
+                    return True
+            elif max:
+                if result[0] <= max:
+                    return True
+            else:
+                if result[0] != 0:
+                    return True
         except Exception:
             return False
     elif standard == "dip20":
@@ -145,8 +214,18 @@ async def user_has_tokens(
 
         result = await dip20.balanceOf_async(principal)  # type: ignore
         try:
-            if result[0] != 0:  # type: ignore
-                return True
+            if min and max:
+                if min <= result[0] <= max:
+                    return True
+            elif min:
+                if min <= result[0]:
+                    return True
+            elif max:
+                if result[0] <= max:
+                    return True
+            else:
+                if result[0] != 0:
+                    return True
         except Exception:
             return False
     return False

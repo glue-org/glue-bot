@@ -2,7 +2,7 @@ from discord.ext import tasks
 from discord import app_commands
 from discord import Guild
 import discord
-from glue.database.database import Guilds
+from glue.database.database import Database
 from glue.discord_bot.helpers import verify_ownership_for_guild
 from dotenv import load_dotenv
 import os
@@ -18,7 +18,7 @@ TEST_GUILD_ID = os.getenv("TEST_GUILD_ID")
 logger = logging.getLogger("discord")
 
 # initialize DB
-db = Guilds()
+db = Database()
 
 
 class Bot(discord.Client):
@@ -47,6 +47,7 @@ class Bot(discord.Client):
     @tasks.loop(seconds=60 * 60)
     async def check_ownership(self):
         logger.info("Checking ownership")
+        # we verify ownership for all guilds at the same time
         result = await asyncio.gather(
             *[verify_ownership_for_guild(guild, self) for guild in db.get_guilds()]
         )
